@@ -1,6 +1,19 @@
-const router = require("express").Router();
 const authRouter = require("./versionOne/auth.router");
+const path = require('path');
 
-router.use("/auth", authRouter);
+module.exports = (app) => {
+    app.get('/', (req, res) => {
+        if (process.env.MODE === 'DEV') {
+            return res.status(200).json({
+                "version": "1.0.0",
+                "status": "OK",
+                "message": "Server is up"
+            });
+        }
+        else {
+            return res.sendFile(path.join(__dirname, '..', 'public', 'notFound.html'));
+        }
+    });
 
-module.exports = router;
+    app.use("/auth", authRouter);
+};

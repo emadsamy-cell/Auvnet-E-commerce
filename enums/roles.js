@@ -1,6 +1,6 @@
 // system  roles
 const roles = Object.freeze({
-  SUPERADMIN: "superAdmin",
+  SUPER_ADMIN: "superAdmin",
   ADMIN: "admin",
   USER: "user",
   VENDOR: "vendor",

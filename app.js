@@ -1,40 +1,48 @@
-const cors = require("cors");
-const logger = require("morgan");
+// server config 
 const express = require("express");
-const indexRouter = require("./routes/index.router");
-const connectDB = require("./config/db.connection");
-const { globalErrorHandling } = require("./middlewares/globalErrorHandling");
-
 const app = express();
 
-// Connect to MongoDB
-// connectDB();
+// Environment variables
+const dotenv = require("dotenv");
+dotenv.config();
 
-// Setup middlewares
-app.use(
-  cors({
-    origin: process.env.frontendBaseURL,
-    credentials: true,
-  })
-);
+// cors options 
+const corsOptions = {
+  origin: "*",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+// Middlewares
+const cors = require("cors");
+const logger = require("morgan");
+app.use(logger("dev"));
+app.use(cors(corsOptions));
 app.use(express.json({}));
 app.use(express.urlencoded({ extended: false }));
 
-// Middleware to log requests
-app.use(logger("dev"));
+// payload size limit
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Database connection 
+const connectDB = require("./config/db.connection");
+connectDB();
 
 // Routes
-app.use("/api", indexRouter);
-
-//Invalid routing
-app.use((req, res, next) => {
-  next(Error("404 Page not found In-valid Routing or method", { cause: 404 }));
-});
+const applicationRoutes = require("./routes/index.router");
+applicationRoutes(app);
 
 // Error handling middleware
-app.use(globalErrorHandling);
+const ErrorHandling = require("./middlewares/globalErrorHandling");
+app.use(express.static('public'));
+app.use(ErrorHandling.globalErrorHandling);
+app.use(ErrorHandling.notFound);
 
 // Start the server
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });
+
+module.exports = app;

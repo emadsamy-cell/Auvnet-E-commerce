@@ -1,5 +1,5 @@
-exports.createResponse = (success, message, statusCode, data = null) => {
-  return data === null
-    ? { success, message, statusCode }
+exports.createResponse = (success, message, statusCode, error = null, data = null) => {
+  return success === false
+    ? { success, message, statusCode, error }
     : { success, message, statusCode, data };
 };
