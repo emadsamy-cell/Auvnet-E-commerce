@@ -1,5 +1,6 @@
 const { createResponse } = require("../utils/createResponse");
 const path = require('path');
+const { APIError } = require('../utils/apiError');
 
 exports.globalErrorHandling = (err, req, res, next) => {
   if (err) {
@@ -20,7 +21,7 @@ exports.globalErrorHandling = (err, req, res, next) => {
 exports.notFound = (req, res, next) => {
   const isApiRequest = req.headers['user-agent'].includes('axios') || req.headers['user-agent'].includes('fetch') || req.headers['postman-token'] || req.headers['user-agent'].includes('insomnia');
   if (isApiRequest) {
-    const err = new this.APIError({
+    const err = new APIError({
       message: 'Route Not found',
       status: 404,
     });
@@ -31,3 +32,11 @@ exports.notFound = (req, res, next) => {
   }
 };
 
+exports.handler = (err, req, res, next) => {
+  const statusCode = err.status ? err.status : 500;
+  res.status(statusCode).json({
+    success: false,
+    statusCode: statusCode,
+    message: err.message,
+  });
+}
