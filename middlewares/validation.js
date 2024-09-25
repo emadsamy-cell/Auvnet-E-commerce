@@ -5,7 +5,7 @@ const { asyncHandler } = require('../utils/asyncHandler');
 exports.validation = schema => {
   return asyncHandler(async (req, res, next) => {
     const errList = [];
-    dataMethods.forEach(async(method) => {
+    await dataMethods.forEach(async(method) => {
       if (schema[method]) {
          const validationResult = await schema[method].validate(req[method], {
           abortEarly: false,
