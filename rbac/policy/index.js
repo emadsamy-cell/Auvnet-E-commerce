@@ -13,9 +13,9 @@ const opts = {
     [roles.SUPER_ADMIN]: {
         can: superAdminPolicy
     },
-    // [roles.USER]: {
-    //     can: userPolicy
-    // }
+    [roles.USER]: {
+         can: userPolicy
+    }
 };
 
 module.exports = opts;
