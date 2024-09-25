@@ -13,14 +13,17 @@ exports.isNotExist = async(filter) => {
         if(user) {
             return {
                 success: false,
-                message: "This email or username already connected to an account",
-                statusCode: 401
+                message: "User already exist",
+                statusCode: 409,
+                error: null
             }
         }
         else {
             return {
                 success: true,
-                statusCode: 200
+                message: "User not existed",
+                statusCode: 200,
+                error: null
             }
         }
     } catch (error) {
@@ -95,7 +98,7 @@ exports.getUser= async(filter) => {
             return {
                 success: false,
                 message: "No user has been found",
-                statusCode: 401,
+                statusCode: 404,
             };
         } else {
             return {

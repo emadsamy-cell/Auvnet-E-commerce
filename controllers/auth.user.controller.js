@@ -16,8 +16,8 @@ exports.signUp = asyncHandler(async (req, res) => {
     // check if the email or username already exist
     const isNotExist = await userRepo.isNotExist({email, username});
     if (!isNotExist.success) {
-        return res.status(isNotExist.statusCode).json(
-            createResponse(false, isNotExist.message, isNotExist.statusCode, isNotExist.error)
+        return res.status(409).json(
+            createResponse(false, "Email or Username already connect to an account", 409, isNotExist.error)
         )
     }
 
@@ -47,7 +47,7 @@ exports.signIn = asyncHandler(async (req, res) => {
     const { usernameOrEmail, password } = req.body;
 
     // check if the username or email exists
-    const user = await userRepo.isExist({usernameOrEmail, password});
+    const user = await userRepo.isExist({usernameOrEmail});
     if (!user.success) {
         return res.status(user.statusCode).json(
             createResponse(user.success, user.message, user.statusCode, user.error)
@@ -88,9 +88,10 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
     let user = await userRepo.getUser({ email });
     if (!user.success) {
         return res.status(user.statusCode).json(
-            createResponse(user.success, user.message, user.statusCode, user.error)
+            createResponse(user.success,"There are no account connected to this email", user.statusCode, user.error)
         );
     }
+    
     // check OTP code
     const matched = (user.data.OTP === req.body.OTP);
     if (!matched) {
