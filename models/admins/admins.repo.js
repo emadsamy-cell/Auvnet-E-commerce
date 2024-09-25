@@ -34,9 +34,26 @@ const checkValidOTPAndUpdate = async (userName, OTP) => {
   return admin;
 }
 
+const getAdminProfile = async(id) => {
+  const adminProfile = await Admin.findById(id).select('userName email phoneNumber role');
+  if (!adminProfile) {
+    throw new Error("Admin not found", { cause: 404 });
+  }
+  return adminProfile;
+}
+
+const updateAdminProfile = async (id, profile) => {
+  const updatedProfile = await Admin.findByIdAndUpdate(id, profile, {new: true, runValidators: true}).select('userName email phoneNumber');
+  if (!updatedProfile) {
+    throw new Error("Admin not found", { cause: 404 });
+  }
+  return updatedProfile;
+}
 module.exports = {
   createAdmin,
   saveOTPToDB,
   getAdmin,
-  checkValidOTPAndUpdate
+  checkValidOTPAndUpdate,
+  getAdminProfile,
+  updateAdminProfile,
 };

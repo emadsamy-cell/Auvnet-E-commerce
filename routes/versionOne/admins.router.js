@@ -1,10 +1,11 @@
 const router = require("express").Router();
-const sendSMS = require("../../utils/sendSMS");
+const auth = require("../../middlewares/auth")
+const { GET_PROFILE, UPDATE_PROFILE } = require("../../endpoints/admin.endpoint")
+const { validation } = require("../../middlewares/validation")
+const { updateProfileController, getProfileController } = require("../../controllers/profileManagementForAdmin.controller");
+const { updateAdminProfileValidation } = require("../../validation/profileManagementForAdmin.validation");
 
-router.post("/send", async (req, res) => {
-  const result = await sendSMS("+201019561595", "hello from express!");
-  res.json({ message: "SMS sent successfully" });
-});
-
+router.get('/profile', auth(GET_PROFILE), getProfileController);
+router.post('/profile', validation(updateAdminProfileValidation), auth(UPDATE_PROFILE), updateProfileController);
 
 module.exports = router;

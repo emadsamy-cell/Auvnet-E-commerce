@@ -1,5 +1,5 @@
 const { createAdmin } = require("../models/admins/admins.repo");
-const { hashPassword } = require("../helpers/passwordHashing");
+const { hashPassword } = require("../helpers/authHelpers");
 const roles = require("../enums/roles");
 
 // Create super admin account
