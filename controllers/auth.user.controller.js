@@ -70,7 +70,7 @@ exports.signIn = asyncHandler(async (req, res) => {
     }
 
     // create token for the user
-    const token = tokenManager.generateToken(user.data._id, user.data.role);
+    const token = tokenManager.generateToken(user.data);
 
     // return result
     return res.status(200).json(

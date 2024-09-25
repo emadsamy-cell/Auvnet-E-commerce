@@ -21,6 +21,6 @@ router.route('/forget-password')
     .post(validation(schema.resendOTP), authUserController.forgetPassword);
     
 router.route('/reset-password')
-    .post(validation(schema.resetPassword), authUserController.resetPassword);
+    .put(validation(schema.resetPassword), authUserController.resetPassword);
 
 module.exports = router;

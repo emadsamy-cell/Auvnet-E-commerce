@@ -1,4 +1,4 @@
-// server config 
+// server config
 const express = require("express");
 const app = express();
 
@@ -6,7 +6,7 @@ const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
 
-// cors options 
+// cors options
 const corsOptions = {
   origin: "*",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -21,10 +21,10 @@ app.use(logger("dev"));
 app.use(cors(corsOptions));
 
 // payload size limit
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: false, limit: "10mb" }));
 
-// Database connection 
+// Database connection
 const connectDB = require("./config/db.connection");
 connectDB();
 
@@ -32,9 +32,13 @@ connectDB();
 const applicationRoutes = require("./routes/index.router");
 applicationRoutes(app);
 
+// initiateSuperAdminAccount
+// const createSuperAdmin  = require("./utils/createSuperAdmin");
+// createSuperAdmin();
+
 // Error handling middleware
 const ErrorHandling = require("./middlewares/globalErrorHandling");
-app.use(express.static('public'));
+app.use(express.static("public"));
 app.use(ErrorHandling.globalErrorHandling);
 app.use(ErrorHandling.notFound);
 
