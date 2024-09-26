@@ -1,4 +1,5 @@
-const { comparePassword, generateOTP, hashPassword } = require("../helpers/authHelpers");
+const passwordManager = require("../helpers/passwordManager");
+const otpManager = require('../helpers/otpManager');
 const userRepo = require('../models/user/user.repo');
 const tokenManager = require('../helpers/tokenManager');
 const mailManager = require('../utils/emailService');
@@ -9,11 +10,11 @@ exports.signUp = asyncHandler(async (req, res) => {
     let { name, userName, email, password } = req.body;
 
     // generate otp code
-    const OTP = generateOTP(); 
+    const OTP = otpManager.generateOTP(); 
     
     // check if the email or userName already exist
     const isExist = await userRepo.findOne({
-        filter: { email, userName },
+        filter: { $or: [ { email }, { userName } ] },
         select: "_id"
     });
 
@@ -24,7 +25,7 @@ exports.signUp = asyncHandler(async (req, res) => {
     }
 
     // create user with the generated otp
-    password = await hashPassword(password);
+    password = await passwordManager.hashPassword(password);
     const user = await userRepo.create({
         data: { name, userName, email, password, OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
     });
@@ -58,14 +59,9 @@ exports.signUp = asyncHandler(async (req, res) => {
 exports.signIn = asyncHandler(async (req, res) => {
     const { email, userName, password } = req.body;
 
-    const filter = {
-        userName: userName ? userName : null,
-        email: email ? email : null,
-    }
-
     // check if the userName or email exists
     const isExist = await userRepo.findOne({
-        filter,
+        filter: { $or: [ { email }, { userName } ] },
         select: "-OTP -accountType -createAt -couponClaimed -voucherClaimed"
     });
 
@@ -76,7 +72,7 @@ exports.signIn = asyncHandler(async (req, res) => {
     }
 
     // compare passwords
-    const matched = comparePassword(password, isExist.data.password);
+    const matched = passwordManager.comparePassword(password, isExist.data.password);
     if (!matched) {
         return res.status(401).json(
             createResponse(false, "Incorrect password", 401)
@@ -108,7 +104,7 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
     // find the user and update the OTP to null
     const result = await userRepo.updateOne({
         filter: { email, OTP, OTPExpiresAt: { $gt: new Date() } },
-        update: { OTP: null, isVerified },
+        update: { OTP: null, isVerified: true },
     });
 
     if (!result.success) {
@@ -119,7 +115,7 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
 
     // return results
     return res.status(result.statusCode).json(
-        createResponse(result.success, "Account has been verified successfully!", result.statusCode)
+        createResponse(result.success, "OTP has been verified successfully!", result.statusCode)
     );
 });
 
@@ -127,7 +123,7 @@ exports.resendOTP = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
     // generate otp code
-    const OTP = generateOTP(); 
+    const OTP = otpManager.generateOTP(); 
 
     // Add OTP code to this email
     let result = await userRepo.updateOne({
@@ -156,7 +152,7 @@ exports.resendOTP = asyncHandler(async (req, res) => {
     }
 
     // send result
-    return res.status(result.success).json(
+    return res.status(result.statusCode).json(
         createResponse(true, "OTP has been sent to your email", result.statusCode)
     );
 });
@@ -165,7 +161,7 @@ exports.forgetPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
     // generate otp code
-    const OTP = generateOTP(); 
+    const OTP = otpManager.generateOTP(); 
 
    // Add OTP code to this email
     let result = await userRepo.updateOne({
@@ -194,7 +190,7 @@ exports.forgetPassword = asyncHandler(async (req, res) => {
     }
 
     // send result
-    return res.status(result.success).json(
+    return res.status(result.statusCode).json(
         createResponse(true, "OTP has been sent to your email", result.statusCode)
     );
 });
@@ -228,7 +224,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     }
 
     // send result
-    return res.status(result.success).json(
+    return res.status(result.statusCode).json(
         createResponse(true, "Password has been changed successfully", result.statusCode)
     );
 });

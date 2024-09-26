@@ -50,7 +50,7 @@ exports.otpTemplate = (otp) => `<!DOCTYPE html>
             <p>Dear user,</p>
             <p>Your OTP code is <span class="otp-code">${otp.value}</span>.</p>
             <p>Please enter this code to complete your verification.</p>
-            <p>This OTP is valid for ${otp.expiresAt}.</p>
+            <p>This OTP is valid for 5 minutes.</p>
         </div>
         <div class="footer">
             <p>Thank you for using our service!</p>
@@ -108,7 +108,7 @@ exports.forgetTemplate = (otp) => `
         <p>We received a request to reset the password for your account associated with this email address.</p>
         <p>Please use the following One-Time Password (OTP) to complete the password reset process:</p>
         <p class="otp">${otp.value}</p>
-        <p>This OTP is valid for the next ${otp.expiresAt}. If you did not request a password reset, please ignore this email.</p>
+        <p>This OTP is valid for the next 5 minutes. If you did not request a password reset, please ignore this email.</p>
         <p>For security reasons, please do not share this OTP with anyone.</p>
         <p>Thank you,<br>The <strong>Auvnet</strong> Team</p>
         <div class="footer">

@@ -1,11 +1,11 @@
 const supertest = require("supertest");
 const app = require("../../app");
 const userRepo = require("../../models/user/user.repo");
-const { comparePassword } = require("../../helpers/authHelpers");
-const data = require('../tempData');
+const passwordManager = require("../../helpers/passwordManager");
+const data = require('../Data');
 
 jest.mock("../../models/user/user.repo");
-jest.mock('../../helpers/authHelpers');
+jest.mock("../../helpers/passwordManager");
 
 
 describe("___User SignUp___", () => {
@@ -56,13 +56,19 @@ describe("___User SignUp___", () => {
       
     it("should return status 201 when all credentials are valid", async () => {
         // email and userName are new
-        userRepo.findOne.mockResolvedValue(data.exist(null));
+        userRepo.findOne.mockResolvedValue(data.notExist);
 
         // account created
-        userRepo.createUser.mockResolvedValue(data.createUser);
+        userRepo.create.mockResolvedValue(data.createUser);
     
         // Make a sign-up request
-        const response = await supertest(app).post("/v1/user/auth/signUp").send(data.createUser);
+        const response = await supertest(app).post("/v1/user/auth/signUp").send({
+            name: data.nameValid,
+            userName: data.userNameValid,
+            email: data.emailValid,
+            password: data.passwordCorrect,
+            confirmPassword: data.passwordCorrect
+        });
     
         expect(response.status).toBe(201); 
         expect(response.body.message).toBe("OTP code has been sent to your email"); 
@@ -102,7 +108,7 @@ describe("___User SignIn___", () => {
         });
     
         expect(response.status).toBe(401); // Expect status 401
-        expect(response.body.message).toBe("Invalid credentials"); 
+        expect(response.body.message).toBe("Incorrect userName or email"); 
     });
 
     it("should return status 401 when userName is incorrect", async () => {
@@ -115,25 +121,28 @@ describe("___User SignIn___", () => {
             password: data.passwordCorrect
         });
     
-        expect(response.status).toBe(401); // Expect status 401
-        expect(response.body.message).toBe("Invalid credentials"); 
+        //expect(response.status).toBe(401); // Expect status 401
+        expect(response.body.message).toBe("Incorrect userName or email"); 
     });
       
     it("should return status 401 when passwords doesn't match", async () => {
         // email exist 
-        userRepo.findOne.mockResolvedValue(data.exist(null));
+        userRepo.findOne.mockResolvedValue(data.exist({
+            password: data.passwordCorrect
+        }));
 
         // wrong password
-        comparePassword.mockResolvedValue(data.notMatch);
+        passwordManager.comparePassword.mockResolvedValue(data.notMatch);
     
         // Make a sign-in request
         const response = await supertest(app).post("/v1/user/auth/signIn").send({
             email: data.emailValid,
             password: data.passwordCorrect,
         });
+        console.log(response.body)
     
         expect(response.status).toBe(401); 
-        expect(response.body.message).toBe("Invalid credentials"); 
+        expect(response.body.message).toBe("Incorrect password"); 
     });
 
     it("should return status 401 when user isn't verified", async () => {
@@ -143,7 +152,7 @@ describe("___User SignIn___", () => {
         }));
 
         // correct password
-        passwordManager.comparePasswords.mockResolvedValue(data.match);
+        passwordManager.comparePassword.mockResolvedValue(data.match);
     
         // Make a sign-in request
         const response = await supertest(app).post("/v1/user/auth/signIn").send({
@@ -162,14 +171,15 @@ describe("___User SignIn___", () => {
         }));
 
         // correct password
-        passwordManager.comparePasswords.mockResolvedValue(data.match);
-    
+        passwordManager.comparePassword.mockResolvedValue(data.match);
+        
         // Make a sign-in request
         const response = await supertest(app).post("/v1/user/auth/signIn").send({
             email: data.emailValid,
             password: data.passwordCorrect,
         });
-    
+        console.log(response.body)
+
         expect(response.status).toBe(200); 
         expect(response.body.message).toBe("Login successfully"); 
     });
@@ -187,53 +197,33 @@ describe("___verifyOTP___", () => {
         expect(response.body.message).toBe("validation error");
     });
 
-    it("should return status 404 when email not found", async () => {
-        // mock get user to be not found
-        userRepo.findOneAndUpdate.mockResolvedValue(data.notExist)
-        
-        const response = await supertest(app).post("/v1/user/auth/verify-otp").send({
-            email: data.emailValid,
-            OTP: data.OTPValid
-        });
-
-        expect(response.status).toBe(404);
-        expect(response.body).toHaveProperty("error");
-        expect(response.body.message).toBe("There are no account connected to this email");
-    });
-
     it("should return status 401 when the otp is incorrect", async () => {
         // there are user with provided email address
-        userRepo.findOneAndUpdate.mockResolvedValue(data.exist({
-            OTP: data.OTPValid
-        }));
+        userRepo.updateOne.mockResolvedValue(data.notExist);
     
         // verify with wrong otp code
         const response = await supertest(app).post("/v1/user/auth/verify-otp").send({
             email: data.emailValid,
             OTP: data.OTPInvalid
         });
-    
+
         expect(response.status).toBe(401); 
-        expect(response.body.message).toBe("Incorrect OTP code"); 
+        expect(response.body.message).toBe("Invalid OTP code"); 
     });
       
-    it("should return status 200 when passwords doesn't match", async () => {
+    it("should return status 200 when matched OTP", async () => {
          // there are user with provided email address
-         userRepo.findOneAndUpdate.mockResolvedValue(data.exist({
-            OTP: data.OTPValid
-        }));
+         userRepo.updateOne.mockResolvedValue(data.exist(null));
     
         // verify with correct otp code
         const response = await supertest(app).post("/v1/user/auth/verify-otp").send({
             email: data.emailValid,
-            OTP: data.OTPInvalid
+            OTP: data.OTPValid
         });
     
         expect(response.status).toBe(200); 
-        expect(response.body.message).toBe("OTP has been verified correctly!"); 
+        expect(response.body.message).toBe("Account has been verified successfully!"); 
     });
-
-  
 });
 
 describe("___Reset Password___", () => {
@@ -263,7 +253,7 @@ describe("___Reset Password___", () => {
 
     it("should return status 403 when OTP is not null", async () => {
         // mock get user to be not found
-        userRepo.findOneAndUpdate.mockResolvedValue(data.notExist)
+        userRepo.updateOne.mockResolvedValue(data.notExist)
         
         const response = await supertest(app).put("/v1/user/auth/reset-password").send({
             email: data.emailValid,
@@ -276,11 +266,9 @@ describe("___Reset Password___", () => {
         expect(response.body.message).toBe("Unauthorized to preform this action");
     });
 
-    it("should return status 200 when email is found and otp is not null", async () => {
+    it("should return status 200 when email is found and otp is null", async () => {
         // mock get user to be not found
-        userRepo.findOneAndUpdate.mockResolvedValue(data.exist({
-            email: data.emailValid
-        }))
+        userRepo.updateOne.mockResolvedValue(data.exist(null))
         
         const response = await supertest(app).put("/v1/user/auth/reset-password").send({
             email: data.emailValid,

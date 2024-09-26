@@ -32,10 +32,6 @@ connectDB();
 const applicationRoutes = require("./routes/index.router");
 applicationRoutes(app);
 
-// initiateSuperAdminAccount
-// const createSuperAdmin  = require("./utils/createSuperAdmin");
-// createSuperAdmin();
-
 // Error handling middleware
 const ErrorHandling = require("./middlewares/globalErrorHandling");
 app.use(express.static("public"));

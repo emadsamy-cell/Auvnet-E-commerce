@@ -89,8 +89,7 @@ exports.userSignIn = {
         'string.min': 'Password should have at least 8 characters',
         'any.required': 'Password is required'
       }),
-  })
-  .or('email', 'username') // Either email or username is required, but not both
+  }).or('email', 'userName') // Either email or username is required, but not both
   .messages({
     'object.missing': 'Either email or username must be provided',
   })
