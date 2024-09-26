@@ -170,3 +170,63 @@ exports.confirmResetPassword = `<!DOCTYPE html>
 </body>
 </html>
 `
+
+exports.adminCredentials = (userName, password, phoneNumber) => `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Credentials</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        .credentials {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome to ${process.env.COMPANY_NAME}, Admin!</h2>
+        <p>Hi <strong>${userName}</strong>,</p>
+        <p>Your account has been successfully created, and here are your credentials:</p>
+        <p class="credentials">
+            Username: ${userName}<br>
+            Password: ${password}<br>
+            Phone Number: ${phoneNumber}
+        </p>
+        <p>We recommend changing your password after your first login for security reasons.</p>
+        <p>Thank you,<br>The <strong>${process.env.COMPANY_NAME}</strong> Team</p>
+        <div class="footer">
+            <p>If you have any questions, feel free to reach out to our support team at <a href="mailto:[support email]">[support email]</a>.</p>
+        </div>
+    </div>
+</body>
+</html>
+`

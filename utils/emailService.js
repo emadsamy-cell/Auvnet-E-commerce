@@ -25,6 +25,11 @@ exports.emailSetup = async(emailType, emailOptions) => {
     mailOptions['html'] = templateManager.confirmResetPassword
   }
 
+  else if(emailType === "adminCredentials"){
+    mailOptions['subject'] = emailOptions.subject,
+    mailOptions['html'] = templateManager.adminCredentials(emailOptions.userName, emailOptions.password, emailOptions.phoneNumber)
+  }
+
   const result = await sendEmail(mailOptions);
   return result;
 };
