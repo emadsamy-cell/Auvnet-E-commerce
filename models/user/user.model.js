@@ -12,7 +12,7 @@ const userSchema = mongoose.Schema({
         required: true,
         lowercase: true
     },
-    username: {
+    userName: {
         type: String,
         unique: true
     },
@@ -22,6 +22,10 @@ const userSchema = mongoose.Schema({
     },
     OTP: {
         type: String,
+        default: null
+    },
+    OTPExpiresAt: {
+        type: Date,
         default: null
     },
     address: {
@@ -150,10 +154,12 @@ const userSchema = mongoose.Schema({
         ref: 'Voucher'
     },
     resetToken: {
-        type: String, 
+        type: String,
+        select: false
     },
     resetTokenExpire: {
         type: Date,
+        select: false
     },
 });
 
