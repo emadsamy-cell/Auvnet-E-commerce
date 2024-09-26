@@ -1,6 +1,5 @@
-const authRouter = require("./versionOne/auth.router");
-const adminsRouter = require("./versionOne/admins.router");
 const path = require("path");
+const v1IndexRouter = require("./versionOne/v1.index.router")
 
 module.exports = (app) => {
   app.get("/", (req, res) => {
@@ -17,6 +16,5 @@ module.exports = (app) => {
     }
   });
   
-  app.use("/auth", authRouter);
-  app.use("/admins", adminsRouter);
+  app.use('/v1', v1IndexRouter)
 };

@@ -5,9 +5,19 @@ const sendSMS = async (to, message) => {
     const api = new ultramsg(process.env.ULTRAMSG_INSTANCE_ID,process.env.ULTRAMSG_API_KEY)
     await api.sendChatMessage(to,message);
     console.log("Message sent successfully....")
+    return {
+      success: true,
+      message: "SMS sent successfully",
+      statusCode: 200,
+    }
   } catch (error) {
     console.log("Error sending message: ", error);
-    throw new Error("Failed to send message!", { cause: 500 });
+    return {
+      success: false,
+      message: "Failed to send SMS",
+      statusCode: 500,
+      error: "Failed to send SMS"
+    }
   }
 };
 
