@@ -4,56 +4,49 @@ const templateManager = require('../helpers/email.template');
 
 const transporter = nodemailer.createTransport(emailConfig);
 
-exports.sendOTPVerificationEmail = async (options) => {
-  try {
-    // Define mail options
-    const mailOptions = {
-      from: process.env.EMAIL_USERNAME,
-      to: options.email,
-      subject: options.subject,
-      html: templateManager.otpTemplate(options.OTP)
-    };
-  
-    // Actually send the email
-    await transporter.sendMail(mailOptions);
-  } catch (err) {
-    console.error(err);
+exports.emailSetup = async(emailType, emailOptions) => {
+  let mailOptions = {
+    from: process.env.EMAIL_USERNAME,
+    to: emailOptions.email
+  };
+
+  if (emailType === "OTPVerification") {
+    mailOptions['subject'] = emailOptions.subject,
+    mailOptions['html'] = templateManager.otpTemplate(emailOptions.OTP)
   }
+
+  else if (emailType === "forgetPassword") {
+    mailOptions['subject'] = emailOptions.subject,
+    mailOptions['html'] = templateManager.forgetTemplate(emailOptions.OTP)
+  }
+
+  else if (emailType === "confirmedResetEmail") {
+    mailOptions['subject'] = emailOptions.subject,
+    mailOptions['html'] = templateManager.confirmResetPassword
+  }
+
+  const result = await sendEmail(mailOptions);
+  return result;
 };
 
-exports.sendForgetEmail = async (options) => {
+const sendEmail = async (mailOptions) => {
   try {
-    // Define mail options
-    const mailOptions = {
-      from: process.env.EMAIL_USERNAME,
-      to: options.email,
-      subject: options.subject,
-      html: templateManager.forgetTemplate(options.OTP)
+    const result = await transporter.sendMail(mailOptions);
+    
+    return {
+      success: true,
+      statusCode: 200,
+      message: "Email has been sent successfully",
+      data: result,
+      error: null
     };
-  
-    // Actually send the email
-    await transporter.sendMail(mailOptions);
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-exports.sendConfirmedResetPasswordEmail = async (options) => {
-  try {
-    // Define mail options
-    const mailOptions = {
-      from: process.env.EMAIL_USERNAME,
-      to: options.email,
-      subject: options.subject,
-      html: templateManager.confirmResetPassword
+  } catch (error) {
+    return {
+        success: false,
+        statusCode: 500,
+        message: "Internal Server Error",
+        data: null,
+        error
     };
-  
-    // Actually send the email
-    await transporter.sendMail(mailOptions);
-  } catch (err) {
-    console.error(err);
   }
-};
-
-
-
+}

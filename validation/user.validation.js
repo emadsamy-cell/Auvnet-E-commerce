@@ -15,7 +15,7 @@ exports.userSignUp = {
         'any.required': 'Name is required'
       }),
     
-    username: Joi.string()
+    userName: Joi.string()
       .alphanum()
       .min(3)
       .max(30)
@@ -59,17 +59,27 @@ exports.userSignUp = {
   }),
 };
 
+
 exports.userSignIn = {
   body: Joi.object({
-    usernameOrEmail : Joi.string()
-      .min(3)
-      .max(30)
-      .required()
+    email: Joi.string()
+      .email()
       .messages({
-        'string.base': 'Username or Email should be a type of text',
-        'any.required': 'Username or Email is required'
+        'string.email': 'Email must be a valid email address',
+        'string.base': 'Email should be a type of text',
+        'string.empty': 'Email cannot be empty',
       }),
     
+    userName: Joi.string()
+      .min(3)
+      .max(30)
+      .messages({
+        'string.base': 'Username should be a type of text',
+        'string.empty': 'Username cannot be empty',
+        'string.min': 'Username should have at least 3 characters',
+        'string.max': 'Username should have at most 30 characters',
+      }),
+
     password: Joi.string()
       .min(8)
       .required()
@@ -79,8 +89,11 @@ exports.userSignIn = {
         'string.min': 'Password should have at least 8 characters',
         'any.required': 'Password is required'
       }),
+  }).or('email', 'userName') // Either email or username is required, but not both
+  .messages({
+    'object.missing': 'Either email or username must be provided',
   })
-}
+};
 
 exports.verifyOTP = {
   body: Joi.object({

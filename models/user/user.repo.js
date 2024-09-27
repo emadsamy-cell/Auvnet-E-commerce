@@ -1,149 +1,151 @@
 const User = require('./user.model');
-const { hashPassword } = require('../../helpers/password.helper');
 
-exports.isNotExist = async(filter) => {
+exports.findOne = async ({ filter = {}, populate = [], select = "" } = {}) => {
     try {
-        const user = await User.findOne({
-            $or: [
-                { email: filter.email },
-                { username: filter.username }
-            ]
-        });
+        const user = await User.findOne(filter).select(select).populate(populate);
 
         if(user) {
             return {
-                success: false,
-                message: "User already exist",
-                statusCode: 409,
-                error: null
-            }
-        }
-        else {
-            return {
                 success: true,
-                message: "User not existed",
                 statusCode: 200,
-                error: null
-            }
-        }
-    } catch (error) {
-        return {
-            success: false,
-            message: "Internal Server Error",
-            statusCode: 500,
-            error
-        }
-    }
-}
-
-exports.isExist = async(filter) => {
-    try {
-        const user = await User.findOne({
-            $or: [
-                { email: filter.usernameOrEmail },
-                { username: filter.usernameOrEmail }
-            ]
-        });
-
-
-        if(user) {
-            return {
-                success: true,
+                message: 'User has been found!',
                 data: user,
-                statusCode: 200,
+                error: null
             }
-        }
-        else {
+        } else {
             return {
                 success: false,
-                statusCode: 401,
-                message: "Invalid credentials",
-                error: "can't find user with this ID !!"
+                statusCode: 404,
+                message: "User not found",
+                data: null,
+                error: `There are no user with this filter ${filter}!!`
             }
         }
+
     } catch (error) {
         return {
             success: false,
-            message: "Internal Server Error",
             statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
             error
         }
     }
-}
+};
 
-exports.createUser = async (data) => {
+exports.create = async ({ data = {} } = {}) => {
     try {
         const user = await User.create(data);
+
         return {
             success: true,
             statusCode: 201,
-            message: "User has been created Successfully",
-            data:user
+            message: "User has been created successfully",
+            data:user,
+            error: null
         };
     } catch (error) {
         return {
             success: false,
             statusCode: 500,
             message: "Internal Server Error",
+            data: null,
             error
         }
     }
 };
 
-exports.getUser= async(filter) => {
+exports.updateOne = async ({ filter = {}, update = {}, options = {} } = {}) => {
     try {
-        const user = await User.findOne(filter);
+        const result = await User.updateOne(filter, update, options);
 
-        if (!user) {
-            return {
-                success: false,
-                message: "No user has been found",
-                statusCode: 404,
-            };
-        } else {
-            return {
-                success: true,
-                message: "User has been found",
-                statusCode: 200,
-                data: user
-            };
-        }
-
-    } catch (error) {
-        return {
-            success: false,
-            message: "Internal Server Error",
-            statusCode: 500,
-            error
-        };
-    }
-};
-
-exports.findAndUpdate = async (filter, update, options) => {
-    try {
-        const user = await User.findOneAndUpdate(filter, update, options);
-        if (user) {
+        if (result.matchedCount === 1) {
             return {
                 success: true,
                 message: "user has been updated successfully",
                 statusCode: 200,
-                data: user
+                data: null,
+                error: null
             };
         } else {
             return {
                 success: false,
-                message: "No user has been found",
-                status: 300,
-                error: "no user with this email"
+                statusCode: 404,
+                message: "User not found",
+                data: null,
+                error: `There are no user with this filter ${filter}!!`
             }
         }
     } catch (error) {
         return {
             success: false,
-            message: "Internal Server Error",
             statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
+            error
+        };
+    }
+};
+
+exports.deleteOne = async ({ filter = {} } = {}) => {
+    try {
+        const result = await model.deleteOne(filter);
+
+        if (result.deletedCount === 0) {
+            return {
+                success: false,
+                statusCode: 404,
+                message: "User not found",
+                data: null,
+                error: `There are no user with this filter ${filter}!!`
+            }
+        } else {
+            return {
+                success: true,
+                statusCode: 204,
+                message: "User successfully deleted",
+                data: null,
+                error: null
+            }
+        }
+    } catch (error) {
+        return {
+            success: false,
+            statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
             error
         };
     }
 }
 
+exports.findOneAndUpdate = async ({ filter = {}, update = {}, options = {}, select = "", populate = [] } = {}) => {
+    try {
+        const user = await User.findOneAndUpdate(filter, update, options).select(select).populate(populate);
+        if (user) {
+            return {
+                success: true,
+                statusCode: 200,
+                message: "user has been updated successfully",
+                data: user,
+                error: null
+            };
+        } else {
+            return {
+                success: false,
+                status: 404,
+                message: "No user has been found",
+                data: null,
+                error: `There are no user with this filter ${filter}!!`
+            }
+        }
+    } catch (error) {
+        return {
+            success: false,
+            statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
+            error
+        };
+    }
+};
