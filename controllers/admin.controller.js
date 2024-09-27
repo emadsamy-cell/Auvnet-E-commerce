@@ -1,11 +1,11 @@
 const sendSMS = require("../utils/sendSMS");
-const { sendEmail } = require("../utils/sendEmail");
 const adminRepo = require("../models/admin/admin.repo");
 const { generateOTP } = require("../helpers/otpManager");
 const { asyncHandler } = require("../utils/asyncHandler");
 const adminMessages = require("../messages/admin.messages");
 const { generateToken } = require("../helpers/tokenManager");
 const { createResponse } = require("../utils/createResponse");
+const mailManager = require("../utils/emailService")
 const { comparePassword, hashPassword } = require("../helpers/passwordManager");
 
 // Admin login
@@ -162,8 +162,16 @@ const createAdminAccountController = asyncHandler(async (req, res) => {
 
 // Send email to admin with credentials
 const sendEmailToAdminController = async (admin) => {
-  const email = adminMessages.emailSentToAdminForAccountCredentials(admin.userName, admin.password, admin.phoneNumber);
-  return await sendEmail(admin.email, email.title, email.body);
+  const emailOptions = {
+    email: admin.email,
+    subject: "Admin Account Credentials",
+    userName: admin.userName,
+    password: admin.password,
+    phoneNumber: admin.phoneNumber,
+  };
+
+  const emailSent = await mailManager.emailSetup("adminCredentials", emailOptions);
+  return emailSent;
 };
 
 module.exports = {
