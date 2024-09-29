@@ -1,7 +1,7 @@
 const Admin = require("./admin.model");
 
 // Create methods
-const createAdmin = async ({ data = {} } = {}) => {
+const create = async (data) => {
   const newAdmin = await Admin.create(data);
   if (!newAdmin) {
     return {
@@ -24,7 +24,7 @@ const createAdmin = async ({ data = {} } = {}) => {
 };
 
 // Get methods
-const isExist = async ({ filter = {}, select = "" } = {}) => {
+const isExist = async (filter, select) => {
   const admin = await Admin.findOne(filter).select(select);
   if (!admin) {
     return {
@@ -41,16 +41,35 @@ const isExist = async ({ filter = {}, select = "" } = {}) => {
     data: admin
   };
 };
+const getAll = async (filter, select, options, populate) => {
+  const [admins, totalAdmins] = await Promise.all([
+    Admin.find(filter)
+      .limit(options.limit)
+      .skip(options.skip)
+      .select(select)
+      .sort(options.sort)
+      .populate(populate),
+    Admin.countDocuments(filter)
+  ]);
+
+  const totalPages = Math.ceil(totalAdmins / options.limit);
+  return { total: totalAdmins, totalPages, admins };
+};
 
 // Update methods
-const updateOne = async ({ filter = {}, data = {} } = {}) => {
+const update = async (filter, data) => {
   const result = await Admin.updateOne(filter, data)
 
-  if(!result.modifiedCount) {
+  if (!result.modifiedCount) {
+    //In case of update with the same data
+    const message = result.matchedCount ? "Admin updated successfully" : "Admin not found"
+    const statusCode = result.matchedCount ? 200 : 404
+    const success = result.matchedCount ? true : false
+
     return {
-      success: false,
-      message: "Failed to update admin",
-      statusCode: 400
+      success,
+      message,
+      statusCode
     }
   }
   return {
@@ -59,10 +78,10 @@ const updateOne = async ({ filter = {}, data = {} } = {}) => {
     statusCode: 200
   }
 }
-const findOneAndUpdate = async ({ filter = {}, data = {}, options = {}, select = "", populate = [] } = {}) => {
+const updateAndReturn = async (filter, data, select, options, populate) => {
   const result = await Admin.findOneAndUpdate(filter, data, options).select(select).populate(populate)
-  
-  if(!result) {
+
+  if (!result) {
     return {
       success: false,
       message: "Failed to update admin",
@@ -79,9 +98,9 @@ const findOneAndUpdate = async ({ filter = {}, data = {}, options = {}, select =
 }
 
 // Delete methods
-const deleteOne = async ({ filter = {} } = {}) => {
+const remove = async (filter) => {
   const result = await Admin.deleteOne(filter)
-  if(!result.deletedCount){
+  if (!result.deletedCount) {
     return {
       success: false,
       message: "Failed to delete admin",
@@ -97,9 +116,10 @@ const deleteOne = async ({ filter = {} } = {}) => {
 }
 
 module.exports = {
-  createAdmin,
-  updateOne,
+  create,
+  update,
   isExist,
-  findOneAndUpdate,
-  deleteOne
+  updateAndReturn,
+  remove,
+  getAll
 };

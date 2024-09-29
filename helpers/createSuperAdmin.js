@@ -1,4 +1,4 @@
-const { createAdmin } = require("../models/admins/admins.repo");
+const adminRepo = require("../models/admin/admin.repo");
 const { hashPassword } = require("./passwordManager");
 const roles = require("../enums/roles");
 
@@ -11,8 +11,9 @@ createSuperAdmin = async () => {
       password: await hashPassword(process.env.SUPER_ADMIN_PASSWORD),
       role: roles.SUPER_ADMIN,
       phoneNumber: process.env.SUPER_ADMIN_PHONE,
+      master: true
     };
-    await createAdmin({ data: superAdmin });
+    await adminRepo.create(superAdmin);
     console.log("Super admin account created successfully");
   } catch (error) {
     console.log("Failed to create super admin account", error);

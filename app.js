@@ -20,6 +20,9 @@ const logger = require("morgan");
 app.use(logger("dev"));
 app.use(cors(corsOptions));
 
+const cookieParser = require("cookie-parser");
+app.use(cookieParser()); 
+
 // payload size limit
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10mb" }));

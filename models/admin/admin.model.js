@@ -37,6 +37,14 @@ const adminSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Admin"
+  },
+  master: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 module.exports = mongoose.model("Admin", adminSchema);
