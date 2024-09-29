@@ -62,7 +62,7 @@ exports.verified = true;
 exports.notVerified = false;
 
 
-exports.exist = (data) => {
+exports.exist = (data) => { 
     return {
         success: true,
         statusCode: 200,
@@ -72,7 +72,7 @@ exports.exist = (data) => {
     }
 };
 
-exports.notExist = {
+exports.notExist = { 
     success: false,
     statusCode: 404,
     message: "User not found",
@@ -80,7 +80,7 @@ exports.notExist = {
     error: null
 };
 
-exports.createUser = {
+exports.createUser = { 
     success: true,
     statusCode: 201,
     message: "User has been created Successfully"

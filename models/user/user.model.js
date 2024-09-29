@@ -28,24 +28,28 @@ const userSchema = mongoose.Schema({
         type: Date,
         default: null
     },
-    address: {
-        country: {
+    country: {
+        type: String,
+        default: null
+    },
+    city: {
+        type: String,
+        default: null
+    },
+    region: {
+        type: String,
+        default: null
+    },
+    location: {
+        type: {
             type: String,
-        },
-        city: {
-            type: String,
-        },
-        region: {
-            type: String,
+            default: 'Point',
+            enum: ['Point'],
         },
         coordinates: {
-            latitude:{
-                type: Number,
-            },
-            longitude: {
-                type: Number,
-            }
-        }
+            type: [Number],
+            default: [0, 0],
+        },
     },
     phone: {
         type: String,
@@ -147,11 +151,13 @@ const userSchema = mongoose.Schema({
     ],
     couponClaimed: {
         type:mongoose.Schema.Types.ObjectId,
-        ref: 'Coupon'
+        ref: 'Coupon',
+        default: null
     },
     voucherClaimed: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Voucher'
+        ref: 'Voucher',
+        default: null
     },
     resetToken: {
         type: String,

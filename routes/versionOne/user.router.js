@@ -2,11 +2,13 @@ const router = require("express").Router();
 
 const schema = require('../../validation/user.validation');
 const { validation } = require('../../middlewares/validation');
-const isAuth = require('../../middlewares/auth')
+const isAuth = require('../../middlewares/auth');
+const uploadImage = require('../../middlewares/uploadImage');
 const userController = require('../../controllers/user.controller');
 
 const {
-    GET_USER
+    GET_USER,
+    UPDATE_USER
 } = require('../../endpoints/user.endpoints');
 
 router.route('/auth/signUp')
@@ -25,10 +27,15 @@ router.route('/auth/forget-password')
     .post(validation(schema.resendOTP), userController.forgetPassword);
     
 router.route('/auth/reset-password')
-    .put(validation(schema.resetPassword), userController.resetPassword);
+    .patch(validation(schema.resetPassword), userController.resetPassword);
 
 router.route('/profile/')
     .get(isAuth(GET_USER), userController.getProfile);
 
+router.route('/profile/update')
+    .patch(uploadImage.single('image'), validation(schema.updateUserProfile), isAuth(UPDATE_USER), userController.updateProfile);
+
+router.route('/profile/change-password')
+    .patch(validation(schema.changeUerPassword), isAuth(UPDATE_USER), userController.changePassword);
 
 module.exports = router;

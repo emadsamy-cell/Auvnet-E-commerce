@@ -60,7 +60,7 @@ exports.otpTemplate = (otp) => `<!DOCTYPE html>
 </html>
 `
 
-exports.forgetTemplate = (otp) => `
+exports.forgetPasswordTemplate = (otp) => `
 <!DOCTYPE html>
 <html lang="en">
 <head>

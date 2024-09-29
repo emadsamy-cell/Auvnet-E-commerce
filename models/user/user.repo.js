@@ -1,6 +1,14 @@
 const User = require('./user.model');
 
-exports.findOne = async ({ filter = {}, populate = [], select = "" } = {}) => {
+/*
+    @params filter: object
+    @params update: object
+    @params populate: object
+    @params options: object
+    @params select: string
+*/
+
+exports.findUser = async (filter, select, populate) => {
     try {
         const user = await User.findOne(filter).select(select).populate(populate);
 
@@ -33,7 +41,7 @@ exports.findOne = async ({ filter = {}, populate = [], select = "" } = {}) => {
     }
 };
 
-exports.create = async ({ data = {} } = {}) => {
+exports.create = async (data) => {
     try {
         const user = await User.create(data);
 
@@ -55,10 +63,10 @@ exports.create = async ({ data = {} } = {}) => {
     }
 };
 
-exports.updateOne = async ({ filter = {}, update = {}, options = {} } = {}) => {
+exports.updateUser = async (filter, update, options) => {
     try {
         const result = await User.updateOne(filter, update, options);
-
+        
         if (result.matchedCount === 1) {
             return {
                 success: true,
@@ -87,7 +95,7 @@ exports.updateOne = async ({ filter = {}, update = {}, options = {} } = {}) => {
     }
 };
 
-exports.deleteOne = async ({ filter = {} } = {}) => {
+exports.deleteUser = async (filter) => {
     try {
         const result = await model.deleteOne(filter);
 
@@ -119,7 +127,7 @@ exports.deleteOne = async ({ filter = {} } = {}) => {
     }
 }
 
-exports.findOneAndUpdate = async ({ filter = {}, update = {}, options = {}, select = "", populate = [] } = {}) => {
+exports.findAndUpdateUser = async (filter, update, select, populate, options) => {
     try {
         const user = await User.findOneAndUpdate(filter, update, options).select(select).populate(populate);
         if (user) {
