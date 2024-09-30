@@ -83,6 +83,19 @@ const updateAdminProfileValidation = {
     }),
 };
 
+const updateAdminPasswordValidation = {
+  body: joi
+    .object()
+    .required()
+    .keys({
+      currentPassword: joi.string().required().messages({
+        "string.empty": "currentPassword can't be empty",
+        "any.required": "currentPassword is required",
+      }),
+      newPassword: password,
+    }),
+};
+
 const createAdminAccountValidation = {
   body: joi
     .object()
@@ -139,6 +152,7 @@ module.exports = {
   verifyOTPValidation,
   requestOTPValidation,
   updateAdminProfileValidation,
+  updateAdminPasswordValidation,
   createAdminAccountValidation,
   updateAdminRoleValidation,
   deleteAdminValidation

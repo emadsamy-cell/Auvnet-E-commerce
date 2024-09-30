@@ -24,7 +24,7 @@ exports.sendRefreshToken = async (req, res) => {
             httpOnly: true,
             secure: true,
             sameSite: 'Strict',
-            path: '/v1/admin/auth/refresh',
+            path: '/v1/auth/refresh',
             maxAge: 0,
         });
         return res.status(500).json(createResponse(false, error.message, 500));
@@ -36,7 +36,7 @@ exports.logoutUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true,
         sameSite: 'Strict',
-        path: '/v1/admin/auth/refresh',
+        path: '/v1/auth/refresh',
         maxAge: 0,
     });
     return res.status(200).json(createResponse(true, "User logged out successfully", 200));

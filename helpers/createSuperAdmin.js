@@ -13,8 +13,18 @@ createSuperAdmin = async () => {
       phoneNumber: process.env.SUPER_ADMIN_PHONE,
       master: true
     };
-    await adminRepo.create(superAdmin);
-    console.log("Super admin account created successfully");
+
+    // Update and return the super admin account, if no account is master then create one
+    const seedSuperAdmin = await adminRepo.updateAndReturn(
+      { master: true },
+      superAdmin,
+      { upsert: true }
+    )
+    if (seedSuperAdmin) {
+      console.log("Super admin account created successfully");
+      return;
+    }
+    console.log("Failed to create super admin account")
   } catch (error) {
     console.log("Failed to create super admin account", error);
   }

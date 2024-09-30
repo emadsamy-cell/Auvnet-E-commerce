@@ -3,7 +3,7 @@ const adminRepo = require("../models/admin/admin.repo");
 const { generateOTP } = require("../helpers/otpManager");
 const { asyncHandler } = require("../utils/asyncHandler");
 const adminMessages = require("../messages/admin.messages");
-const {  generateAccessToken, generateRefreshToken } = require("../helpers/tokenManager");
+const { generateAccessToken, generateRefreshToken } = require("../helpers/tokenManager");
 const { createResponse } = require("../utils/createResponse");
 const mailManager = require("../utils/emailService")
 const { comparePassword, hashPassword } = require("../helpers/passwordManager");
@@ -15,7 +15,7 @@ const adminLoginController = asyncHandler(async (req, res) => {
   const { userName, password } = req.body;
 
   // Check if admin exists with the given userName
-  const adminExist = await adminRepo.isExist({ userName }, "userName password phoneNumber");
+  const adminExist = await adminRepo.isExist({ userName }, "userName password phoneNumber isDeleted");
   if (!adminExist.success) {
     return res.status(401).json(createResponse(adminExist.success, "Invalid userName", 401));
   }
@@ -24,6 +24,11 @@ const adminLoginController = asyncHandler(async (req, res) => {
   const passwordMatch = await comparePassword(password, adminExist.data.password);
   if (!passwordMatch) {
     return res.status(401).json(createResponse(false, "Invalid password", 401));
+  }
+
+  // Check if admin is deleted
+  if (adminExist.data.isDeleted) {
+    return res.status(403).json(createResponse(false, "Account is deleted", 403));
   }
 
   // Generate OTP
@@ -70,7 +75,7 @@ const verifyOTPController = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
     sameSite: 'Strict',
-    path: '/v1/admin/auth/refresh',
+    path: '/v1/auth/refresh',
     maxAge: +process.env.COOKIE_MAX_AGE_MS
   });
 
@@ -146,6 +151,41 @@ const updateProfileController = asyncHandler(async (req, res) => {
   return res.status(updatedAdmin.statusCode).json(createResponse(updatedAdmin.success, "Profile updated successfully", updatedAdmin.statusCode, null, updatedAdmin.data));
 });
 
+// Update admin password
+const changePasswordController = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  // get the user with given id
+  const admin = await adminRepo.isExist(
+    { _id: req.user._id },
+    "password"
+  );
+  if (!admin.success) {
+    return res.status(admin.statusCode).json(
+      createResponse(admin.success, admin.message, admin.statusCode)
+    );
+  }
+
+  // compare the old password with the current password
+  const matched = await comparePassword(currentPassword, admin.data.password);
+  if (!matched) {
+    return res.status(401).json(
+      createResponse(false, "Incorrect password", 401)
+    );
+  }
+
+  // update the password with the new password
+  const password = await hashPassword(newPassword);
+  const result = await adminRepo.update(
+    { _id: req.user._id },
+    { password }
+  );
+
+  return res.status(result.statusCode).json(
+    createResponse(result.success, "Password has been changed successfully", result.statusCode)
+  );
+});
+
 // Create admin account
 const createAdminAccountController = asyncHandler(async (req, res) => {
   const { userName, email, password, phoneNumber } = req.body;
@@ -186,7 +226,7 @@ const getAllAdminsController = asyncHandler(async (req, res) => {
   const { page, size } = req.query;
   const options = paginate(page, size);
 
-  const admins = await adminRepo.getAll(
+  const admins = await adminRepo.getList(
     { role: roles.ADMIN },
     "userName email phoneNumber role isDeleted",
     { sort: { createdAt: -1 }, ...options },
@@ -245,6 +285,7 @@ module.exports = {
   requestOTPController,
   getProfileController,
   updateProfileController,
+  changePasswordController,
   createAdminAccountController,
   getAllAdminsController,
   updateAdminRoleController,
