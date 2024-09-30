@@ -10,7 +10,7 @@ describe("___Admin Login___", () => {
       userName: "ad",
       password: "admin123",
     });
-    console.log(response.body)
+
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty("error");
     expect(response.body.message).toBe("validation error");
@@ -37,7 +37,7 @@ describe("___Admin Login___", () => {
 
   it("should return status 401 when admin logins with invalid password", async () => {
     const response = await supertest(app).post("/v1/admin/auth/signIn").send(loginAdminDataWithInvalidPassword);
-    console.log(response.body)
+
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty("error");
     expect(response.body.message).toBe("Invalid password");

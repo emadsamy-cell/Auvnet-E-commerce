@@ -38,7 +38,7 @@ describe("___Update Profile For Admin___", () => {
       .patch("/v1/admin/profile")
       .set("Authorization", `Bearer ${validAdminToken}`)
       .send(Object.assign(validAdminProfileData, { userName: existedAdminUserName }));
-    console.log(response.body)
+
     expect(response.status).toBe(409);
     expect(response.body.success).toBe(false);
   });
@@ -65,3 +65,4 @@ describe("___Update Profile For Admin___", () => {
     expect(response.body.data).toEqual(Object.assign(validAdminProfileData, { _id: response.body.data._id }));
   });
 });
+

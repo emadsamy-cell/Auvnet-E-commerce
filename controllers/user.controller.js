@@ -3,6 +3,7 @@ const otpManager = require('../helpers/otpManager');
 const userRepo = require('../models/user/user.repo');
 const tokenManager = require('../helpers/tokenManager');
 const mailManager = require('../utils/emailService');
+const filterManager = require('../helpers/requestManager');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { createResponse } = require('../utils/createResponse');
 
@@ -11,24 +12,24 @@ exports.signUp = asyncHandler(async (req, res) => {
 
     // generate otp code
     const OTP = otpManager.generateOTP(); 
-    
+
     // check if the email or userName already exist
-    const isExist = await userRepo.findOne({
-        filter: { $or: [ { email }, { userName } ] },
-        select: "_id"
-    });
+    const isExist = await userRepo.findUser(
+        { $or: [ { email }, { userName } ] },
+        "_id"
+    );
 
     if (isExist.success) {
         return res.status(409).json(
             createResponse(false, "Email or userName already connect to an account", 409, isExist.error)
         )
     }
-
+    
     // create user with the generated otp
     password = await passwordManager.hashPassword(password);
-    const user = await userRepo.create({
-        data: { name, userName, email, password, OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
-    });
+    const user = await userRepo.create(
+       { name, userName, email, password, OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
+    );
 
     if (!user.success) {
         return res.status(user.statusCode).json(
@@ -60,10 +61,10 @@ exports.signIn = asyncHandler(async (req, res) => {
     const { email, userName, password } = req.body;
 
     // check if the userName or email exists
-    const isExist = await userRepo.findOne({
-        filter: { $or: [ { email }, { userName } ] },
-        select: "-OTP -accountType -createAt -couponClaimed -voucherClaimed"
-    });
+    const isExist = await userRepo.findUser(
+        { $or: [ { email }, { userName } ] },
+        "-OTP -accountType -createAt -couponClaimed -voucherClaimed"
+    );
 
     if (!isExist.success) {
         return res.status(401).json(
@@ -72,7 +73,7 @@ exports.signIn = asyncHandler(async (req, res) => {
     }
 
     // compare passwords
-    const matched = passwordManager.comparePassword(password, isExist.data.password);
+    const matched = await passwordManager.comparePassword(password, isExist.data.password);
     if (!matched) {
         return res.status(401).json(
             createResponse(false, "Incorrect password", 401)
@@ -102,14 +103,14 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
     const { email, OTP } = req.body;
     
     // find the user and update the OTP to null
-    const result = await userRepo.updateOne({
-        filter: { email, OTP, OTPExpiresAt: { $gt: new Date() } },
-        update: { OTP: null, isVerified: true },
-    });
+    const result = await userRepo.updateUser(
+        { email, OTP, OTPExpiresAt: { $gt: new Date() } },
+        { OTP: null, isVerified: true },
+    );
 
     if (!result.success) {
         return res.status(401).json(
-            createResponse(result.success,"Invalid OTP code", result.statusCode, result.error)
+            createResponse(result.success,"OTP is incorrect or expired!", result.statusCode, result.error)
         );
     }
 
@@ -126,10 +127,10 @@ exports.resendOTP = asyncHandler(async (req, res) => {
     const OTP = otpManager.generateOTP(); 
 
     // Add OTP code to this email
-    let result = await userRepo.updateOne({
-        data: { email },
-        update: {  OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
-    });
+    let result = await userRepo.updateUser(
+        { email },
+        {  OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
+    );
 
     // email not found
     if (!result.success)
@@ -164,10 +165,10 @@ exports.forgetPassword = asyncHandler(async (req, res) => {
     const OTP = otpManager.generateOTP(); 
 
    // Add OTP code to this email
-    let result = await userRepo.updateOne({
-        data: { email },
-        update: {  OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
-    });
+    let result = await userRepo.updateUser(
+        { email },
+        {  OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
+    );
 
     // email not found
     if (!result.success)
@@ -200,10 +201,10 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     password = await passwordManager.hashPassword(password);
 
     // Update user with email and otp is null then update password
-    let result = await userRepo.updateOne({
-        filter: { email, OTP: null }, 
-        update: { isVerified: true, password }, 
-    });
+    let result = await userRepo.updateUser(
+        { email, OTP: null }, 
+        { isVerified: true, password }, 
+    );
 
     if (!result.success) {
         return res.status(403).json(
@@ -231,14 +232,14 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 
 exports.getProfile = asyncHandler(async (req, res) => {
     // get user with id
-    const user = userRepo.findOne({ 
-        filter: { _id: req.user.id },
-        select: "name address phone gender image"
-    });
-    
+    const user = await userRepo.findUser(
+        { _id: req.user._id },
+        "name country city region phone gender image -_id"
+    );
+
     if (!user.success) {
         return res.status(user.statusCode).json(
-            createResponse(user.success, "This user is deleted", user.statusCode, user.error)
+            createResponse(user.success, "This user is not found", user.statusCode, user.error)
         );
     }
 
@@ -249,4 +250,80 @@ exports.getProfile = asyncHandler(async (req, res) => {
 });
 
 exports.updateProfile = asyncHandler(async (req, res) => {
+    const allowedFields = ["name", "phone", "country", "city", "region", "gender"];
+    let filteredBody = filterManager.filterRequestBody(req.body, allowedFields);
+
+    // check if coordinates is exist
+    if (req.body.latitude && req.body.longitude) {
+        const {latitude, longitude} = req.body;
+        filteredBody.location = {
+            type: "Point",
+            coordinates: [latitude * 1, longitude * 1]
+        }
+    }
+
+    // check if the image is exist
+    if (req.file) {
+        filteredBody.image = req.file.location;
+    }
+    
+    // update user with id
+    const result = await userRepo.findAndUpdateUser(
+        { _id: req.user._id },
+        filteredBody,
+        "name country city region phone gender image -_id",
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, "This user is not found", result.statusCode, result.error)
+        );
+    }
+
+    // send the result
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "User updated successfully", result.statusCode, null, result.data)
+    );
+});
+
+exports.changePassword = asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+
+    // get the user with id
+    const user = await userRepo.findUser(
+        { _id: req.user._id },
+        "password"
+    );
+
+    if (!user.success) {
+        return res.status(user.statusCode).json(
+            createResponse(user.success, "This user is not found", user.statusCode, user.error)
+        );
+    }
+
+    // compare the old password with the current password
+    const matched = await passwordManager.comparePassword(currentPassword, user.data.password);
+    if (!matched) {
+        return res.status(401).json(
+            createResponse(false, "Incorrect password", 401)
+        );
+    }
+
+    // update the password with the new password
+    const password = await passwordManager.hashPassword(newPassword);
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        { password }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, "This user is not found", result.statusCode, result.error)
+        );
+    }
+
+    // send the result
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Password has been changed successfully", result.statusCode)
+    );
 });

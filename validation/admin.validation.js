@@ -1,4 +1,5 @@
 const joi = require("joi");
+const roles = require("../enums/roles");
 
 // _______________________________ Validation Data _______________________________
 const userName = joi.string().min(3).max(30).required().alphanum().messages({
@@ -10,11 +11,12 @@ const userName = joi.string().min(3).max(30).required().alphanum().messages({
   "any.required": "Username is required",
 })
 
-const password = joi.string().min(5).required().messages({
-  "string.empty": "Password is required",
-  "string.min": "Password must be at least 5 characters long",
-  "any.required": "Password is required",
-})
+const password = joi.string().required().pattern(new RegExp(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)).required()
+  .messages({
+    "string.empty": "Password is required",
+    "any.required": "Password is required",
+    'string.pattern.base': 'Minimum eight, at least one uppercase letter, one lowercase letter, one number and one special character'
+  })
 
 const email = joi.string().email().required().messages({
   "string.base": "Email should be a type of text",
@@ -44,7 +46,10 @@ const adminLoginValidation = {
     .required()
     .keys({
       userName,
-      password,
+      password: joi.string().required().messages({
+        "string.empty": "Password is required",
+        "any.required": "Password is required",
+      })
     }),
 };
 
@@ -76,24 +81,65 @@ const updateAdminProfileValidation = {
       phoneNumber,
       email,
     }),
-}; 
+};
 
 const createAdminAccountValidation = {
-    body: joi
-      .object()
-      .required()
-      .keys({
-        userName,
-        password,
-        email,
-        phoneNumber,
+  body: joi
+    .object()
+    .required()
+    .keys({
+      userName,
+      password,
+      email,
+      phoneNumber,
+    }),
+};
+
+const updateAdminRoleValidation = {
+  body: joi
+    .object()
+    .required()
+    .keys({
+      newRole: joi.string().required().valid(roles.ADMIN, roles.SUPER_ADMIN).messages({
+        "string.empty": "newRole is required",
+        "any.required": "newRole is required",
+        "any.only": `newRole must be either '${roles.ADMIN}' or '${roles.SUPER_ADMIN}'`,
       }),
-  };
+    }),
+  params: joi
+    .object()
+    .required()
+    .keys({
+      adminId: joi.string().min(24).max(24).required().messages({
+        "string.empty": "adminId is required",
+        "any.required": "adminId is required",
+        "string.min": "adminId must be 24 characters long",
+        "string.max": "adminId must be 24 characters long",
+      }),
+    }),
+};
+
+const deleteAdminValidation = {
+  params: joi
+    .object()
+    .required()
+    .keys({
+      adminId: joi.string().min(24).max(24).required().messages({
+        "string.empty": "adminId is required",
+        "any.required": "adminId is required",
+        "string.min": "adminId must be 24 characters long",
+        "string.max": "adminId must be 24 characters long",
+      }),
+    }),
+};
+
 
 module.exports = {
   adminLoginValidation,
   verifyOTPValidation,
   requestOTPValidation,
   updateAdminProfileValidation,
-  createAdminAccountValidation
+  createAdminAccountValidation,
+  updateAdminRoleValidation,
+  deleteAdminValidation
 };

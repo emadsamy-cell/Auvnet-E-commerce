@@ -17,7 +17,7 @@ exports.emailSetup = async(emailType, emailOptions) => {
 
   else if (emailType === "forgetPassword") {
     mailOptions['subject'] = emailOptions.subject,
-    mailOptions['html'] = templateManager.forgetTemplate(emailOptions.OTP)
+    mailOptions['html'] = templateManager.forgetPasswordTemplate(emailOptions.OTP)
   }
 
   else if (emailType === "confirmedResetEmail") {
