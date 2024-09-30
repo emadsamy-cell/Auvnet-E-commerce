@@ -7,7 +7,7 @@ module.exports = (endpoints) => {
         try {
             let barerToken = req.headers.authorization;
             let token = barerToken.split(" ")[1];
-            let decoded = tokenManager.compareToken(token, process.env.JWT_SECRET_KEY);
+            let decoded = tokenManager.compareToken(token, process.env.ACCESS_TOKEN_SECRET_KEY);
             const isAllowed = await rbac.can(decoded.role, endpoints);
             if (!isAllowed) {
                 return res.status(403).json({

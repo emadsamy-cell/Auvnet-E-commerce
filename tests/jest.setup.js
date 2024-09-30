@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
+const dev = require('../dev/user.dev');
 
 beforeAll(async () => {
   await mongoose.connect(process.env.MONGO_URL);
   console.log("Database connected successfully....");
+  dev.active();
 });
 
 beforeEach(async () => {

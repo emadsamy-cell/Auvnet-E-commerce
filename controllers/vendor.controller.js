@@ -36,13 +36,23 @@ exports.signIn = asyncHandler(async (req, res) => {
         );
     }
 
-    // create token for the vendor
-    const token = tokenManager.generateToken(isExist.data);
+    // Generate access & refresh token
+    const accessToken = tokenManager.generateAccessToken(isExist.data);
+    const refreshToken = tokenManager.generateRefreshToken(isExist.data);
+
+    // Send refresh token in secure cookie
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Strict',
+        path: '/v1/auth/refresh',
+        maxAge: +process.env.COOKIE_MAX_AGE_MS
+    });
 
     // return result
     return res.status(200).json(
         createResponse(true, "Login successfully", 200, null, {
-            token,
+            token: accessToken,
             user: isExist.data
         })
     );

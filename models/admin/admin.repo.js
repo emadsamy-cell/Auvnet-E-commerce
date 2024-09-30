@@ -41,7 +41,7 @@ const isExist = async (filter, select) => {
     data: admin
   };
 };
-const getAll = async (filter, select, options, populate) => {
+const getList = async (filter, select, options, populate) => {
   const [admins, totalAdmins] = await Promise.all([
     Admin.find(filter)
       .limit(options.limit)
@@ -121,5 +121,5 @@ module.exports = {
   isExist,
   updateAndReturn,
   remove,
-  getAll
+  getList
 };
