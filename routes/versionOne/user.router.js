@@ -3,7 +3,7 @@ const router = require("express").Router();
 const schema = require('../../validation/user.validation');
 const { validation } = require('../../middlewares/validation');
 const isAuth = require('../../middlewares/auth');
-const uploadImage = require('../../middlewares/uploadImage');
+const { uploadSingleFile } = require('../../middlewares/upload');
 const userController = require('../../controllers/user.controller');
 
 const {
@@ -33,7 +33,7 @@ router.route('/profile/')
     .get(isAuth(GET_USER), userController.getProfile);
 
 router.route('/profile/update')
-    .patch(uploadImage.single('image'), validation(schema.updateUserProfile), isAuth(UPDATE_USER), userController.updateProfile);
+    .patch(uploadSingleFile('image', 'image'), validation(schema.updateUserProfile), isAuth(UPDATE_USER), userController.updateProfile);
 
 router.route('/profile/change-password')
     .patch(validation(schema.changeUerPassword), isAuth(UPDATE_USER), userController.changePassword);

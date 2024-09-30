@@ -4,6 +4,7 @@ const roles = require("../../enums/roles");
 const adminPolicy = require("./adminPolicy");
 const superAdminPolicy = require("./superAdminPolicy");
 const userPolicy = require("./userPolicy");
+const vendorPolicy = require("./vendorPolicy");
 
 const opts = {
 
@@ -15,6 +16,9 @@ const opts = {
     },
     [roles.USER]: {
          can: userPolicy
+    },
+    [roles.VENDOR]: {
+        can: vendorPolicy
     }
 };
 

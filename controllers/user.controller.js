@@ -3,7 +3,6 @@ const otpManager = require('../helpers/otpManager');
 const userRepo = require('../models/user/user.repo');
 const tokenManager = require('../helpers/tokenManager');
 const mailManager = require('../utils/emailService');
-const filterManager = require('../helpers/requestManager');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { createResponse } = require('../utils/createResponse');
 
@@ -103,16 +102,37 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
     const { email, OTP } = req.body;
     
     // find the user and update the OTP to null
-    const result = await userRepo.updateUser(
-        { email, OTP, OTPExpiresAt: { $gt: new Date() } },
-        { OTP: null, isVerified: true },
-    );
+    const user = await userRepo.findUser(
+        { email },
+        "OTP OTPExpiresAt _id"
+    )
 
-    if (!result.success) {
-        return res.status(401).json(
-            createResponse(result.success,"OTP is incorrect or expired!", result.statusCode, result.error)
+    // email not found
+    if (!user.success) {
+        return res.status(user.statusCode).json(
+            createResponse(user.success, "This email has no accounts", user.statusCode, user.error)
         );
     }
+
+    // if OTP is not equal to the user OTP
+    if (user.data.OTP !== OTP) {
+        return res.status(401).json(
+            createResponse(false, "Incorrect OTP", 401)
+        );
+    }
+
+    // check if the OTP is expired
+    if (new Date() > user.data.OTPExpiresAt) {
+        return res.status(401).json(
+            createResponse(false, "OTP has been expired", 401)
+        );
+    }
+
+    // update the user with the OTP to null
+    const result = await userRepo.updateUser(
+        { _id: user.data._id },
+        { OTP: null, isVerified: true }
+    );
 
     // return results
     return res.status(result.statusCode).json(
@@ -250,13 +270,10 @@ exports.getProfile = asyncHandler(async (req, res) => {
 });
 
 exports.updateProfile = asyncHandler(async (req, res) => {
-    const allowedFields = ["name", "phone", "country", "city", "region", "gender"];
-    let filteredBody = filterManager.filterRequestBody(req.body, allowedFields);
-
     // check if coordinates is exist
     if (req.body.latitude && req.body.longitude) {
         const {latitude, longitude} = req.body;
-        filteredBody.location = {
+        req.body.location = {
             type: "Point",
             coordinates: [latitude * 1, longitude * 1]
         }
@@ -264,13 +281,13 @@ exports.updateProfile = asyncHandler(async (req, res) => {
 
     // check if the image is exist
     if (req.file) {
-        filteredBody.image = req.file.location;
+        req.body.image = req.file.location;
     }
     
     // update user with id
     const result = await userRepo.findAndUpdateUser(
         { _id: req.user._id },
-        filteredBody,
+        req.body,
         "name country city region phone gender image -_id",
     );
 
