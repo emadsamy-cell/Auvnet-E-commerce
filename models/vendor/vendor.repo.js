@@ -1,4 +1,4 @@
-const Vendor = require('./Vendor.model');
+const Vendor = require('./vendor.model');
 
 /*
     @params filter: object

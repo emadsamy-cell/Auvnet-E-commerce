@@ -11,13 +11,11 @@ const vendorSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        index: true
     },
     userName: {
         type: String,
         required: true,
         unique: true,
-        index: true
     },
     password: {
         type: String,
