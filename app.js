@@ -20,8 +20,19 @@ const logger = require("morgan");
 app.use(logger("dev"));
 app.use(cors(corsOptions));
 
+// Cookie parser
 const cookieParser = require("cookie-parser");
-app.use(cookieParser()); 
+app.use(cookieParser());
+
+//OAUTH
+const session = require("express-session");
+app.use(session({
+  resave: false,
+  saveUninitialized: true,
+  secret: process.env.SESSION_SECRET,
+}))
+const passport = require("passport");
+app.use(passport.initialize());
 
 // payload size limit
 app.use(express.json({ limit: "10mb" }));

@@ -37,9 +37,14 @@ const compareToken = (token, key) => {
   return decoded;
 };
 
+const decodeToken = (token, options = {}) => {
+  return jwt.decode(token, options);
+};
+
 module.exports = {
   generateToken,
   compareToken,
   generateAccessToken,
-  generateRefreshToken
+  generateRefreshToken,
+  decodeToken
 };

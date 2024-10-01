@@ -82,7 +82,7 @@ describe("___verifyOTP___", () => {
         const response = await supertest(app).post("/v1/user/auth/verify-otp").send(data.invalidOTPVerification);
 
         expect(response.status).toBe(401); 
-        expect(response.body.message).toBe("OTP is incorrect or expired!"); 
+        expect(response.body.message).toBe("Incorrect OTP"); 
     });
 
     it("should return status 401 when the otp is expired", async () => {
@@ -96,7 +96,7 @@ describe("___verifyOTP___", () => {
         const response = await supertest(app).post("/v1/user/auth/verify-otp").send(data.validOTPVerification);
 
         expect(response.status).toBe(401); 
-        expect(response.body.message).toBe("OTP is incorrect or expired!"); 
+        expect(response.body.message).toBe("OTP has been expired"); 
     });
       
     it("should return status 200 when matched OTP", async () => {

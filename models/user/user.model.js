@@ -10,11 +10,15 @@ const userSchema = mongoose.Schema({
         type: String,
         unique: true,
         required: true,
-        lowercase: true
+        lowercase: true,
+        trim: true,
+        index: true
     },
     userName: {
         type: String,
-        unique: true
+        required : true,
+        unique: true,
+        index: true
     },
     password: {
         type: String,
@@ -168,6 +172,8 @@ const userSchema = mongoose.Schema({
         select: false
     },
 });
+
+userSchema.index({ location: '2dsphere' });
 
 userSchema.index({ 'notifications.expireAt': 1 }, {expireAfterSeconds: 0});
 
