@@ -70,7 +70,22 @@ const couponSchema = mongoose.Schema({
         }
     },
     // Number of times coupon has been used
-    used: {
+    usedBy: [
+        {
+            userId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',  
+                required: true,
+                index: true
+            },
+            count: {
+                type: Number,
+                default: 0,
+                required: true
+            }
+        }
+    ],
+    totalUsed: {
         type: Number,
         default: 0
     },
@@ -113,7 +128,11 @@ const couponSchema = mongoose.Schema({
     categories: [{
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Category',
-    }]
+    }],
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });

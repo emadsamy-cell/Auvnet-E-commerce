@@ -9,13 +9,13 @@ router.post('/refresh', authController.sendRefreshToken);
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/v1/auth/google/fail' }), authController.socialLoginCallback);
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/auth/google/fail' }), authController.socialLoginCallback);
 
 router.get('/google/fail', authController.socialLoginFail);
 
 router.get('/apple', passport.authenticate('apple'));
 
-router.get('/apple/callback', passport.authenticate('apple', { failureRedirect: '/v1/auth/apple/fail' }), authController.socialLoginCallback);
+router.get('/apple/callback', passport.authenticate('apple', { failureRedirect: '/auth/apple/fail' }), authController.socialLoginCallback);
 
 router.get('/apple/fail', authController.socialLoginFail);
 

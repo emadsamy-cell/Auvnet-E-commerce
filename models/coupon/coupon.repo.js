@@ -85,7 +85,7 @@ const updateAndReturn = async (filter, data, select, options, populate) => {
     return {
       success: false,
       message: "Failed to update coupon",
-      statusCode: 400,
+      statusCode: 404,
       error: "Coupon not found"
     }
   }

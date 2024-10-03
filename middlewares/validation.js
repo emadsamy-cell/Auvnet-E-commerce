@@ -11,7 +11,6 @@ exports.validation = (schema) => {
           abortEarly: false,
         });
         if (validationResult?.error) {
-          console.log(validationResult.error.details)
           errList.push(
             ...validationResult.error.details.map((e) => ({
               path: e.path[0],
