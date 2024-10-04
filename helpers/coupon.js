@@ -11,17 +11,17 @@ exports.getCouponsForUser = async (req) => {
     return { couponFilter, select };
 }
 
-exports.getCouponsForVendor = async(req) => {
-    const select = "code discountType discountValue discountPercent status expireAt used vendor"
+exports.getCouponsForVendor = async (req) => {
+    const select = "code discountType discountValue discountPercent status expireAt usedBy totalUsed isDeleted"
 
     // Use the filterBuilder to construct the coupon filter for the vendor
     const couponFilter = await this.filterBuilder(req);
-    console.log(couponFilter)
+
     return { couponFilter, select };
 }
 
-exports.getCouponsForAdmin = async(req) => {
-    const select = "code discountType discountValue discountPercent status expireAt used"
+exports.getCouponsForAdmin = async (req) => {
+    const select = "code discountType discountValue discountPercent status expireAt usedBy totalUsed isDeleted"
 
     // Use the filterBuilder to construct the coupon filter for the admin
     const couponFilter = await this.filterBuilder(req);
@@ -33,7 +33,7 @@ exports.filterBuilder = async (req) => {
     const filter = {};
 
     // Case single coupon
-    if(req.params.id) filter._id = req.params.id;
+    if (req.params.id) filter._id = req.params.id;
 
     // Case list of coupons
     if (req.query.status) filter.status = req.query.status;
@@ -43,9 +43,9 @@ exports.filterBuilder = async (req) => {
     switch (req.user.role) {
         case roles.USER:
             const user = await userRepo.findUser({ _id: req.user._id }, "country region city");
+            filter.isDeleted = { $in: [false, null] };
             filter.$or = [
                 { couponType: couponEnum.couponType.GLOBAL },
-                { couponType: 'global' },
                 { 'termsAndConditions.audienceLocation.type': 'country', 'termsAndConditions.audienceLocation.location': { $regex: new RegExp(user.data.country, 'i') } },
                 { 'termsAndConditions.audienceLocation.type': 'region', 'termsAndConditions.audienceLocation.location': { $regex: new RegExp(user.data.region, 'i') } },
                 { 'termsAndConditions.audienceLocation.type': 'city', 'termsAndConditions.audienceLocation.location': { $regex: new RegExp(user.data.city, 'i') } }
@@ -53,7 +53,6 @@ exports.filterBuilder = async (req) => {
             break;
 
         case roles.VENDOR:
-            console.log(req.user.role)
             filter.vendor = req.user._id;
             break;
 

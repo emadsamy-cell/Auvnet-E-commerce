@@ -11,7 +11,8 @@ const {
 
 const {
     GET_COUPONS,
-    GET_COUPON
+    GET_COUPON,
+    CLAIM_COUPON
 } = require("../../endpoints/coupon.endpoint")
 
 module.exports = [
@@ -19,6 +20,7 @@ module.exports = [
     UPDATE_USER,
     GET_COUPONS,
     GET_COUPON,
+    CLAIM_COUPON,
 
     GET_CATEGORY
 ];
