@@ -1,4 +1,4 @@
-const Vendor = require('./vendor.model');
+const Product = require('./product.model');
 
 /*
     @params filter: object
@@ -6,23 +6,26 @@ const Vendor = require('./vendor.model');
     @params populate: object
     @params options: object
     @params select: string
+    @params skip: number
+    @params limit: number
+    @params sort: string
 */
 
 exports.getList = async (filter, select, populate, skip, limit, sort) => {
     try {
-        const [ vendors, vendorCount ] = await Promise.all([
-            Vendor.find(filter).select(select).populate(populate).skip(skip).limit(limit).sort(sort),
-            Vendor.countDocuments(filter)
+        const [ products, productCount ] = await Promise.all([
+            Product.find(filter).select(select).populate(populate).skip(skip).limit(limit).sort(sort),
+            Product.countDocuments(filter)
         ]);
 
-        const pages = Math.ceil(vendorCount / limit);
+        const pages = Math.ceil(productCount / limit);
 
         return {
             success: true,
             statusCode: 200,
-            message: "Vendors has been found!",
+            message: "Products has been found!",
             data: {
-                vendors,
+                products,
                 pages
             },
             error: null
@@ -39,25 +42,24 @@ exports.getList = async (filter, select, populate, skip, limit, sort) => {
     }
 }
 
-exports.findVendor = async (filter, select, populate) => {
+exports.isExist = async (filter, select, populate) => {
     try {
-        const vendor = await Vendor.findOne(filter).select(select).populate(populate);
-
-        if(vendor) {
+        const product = await Product.findOne(filter).select(select).populate(populate);
+        if(product) {
             return {
                 success: true,
                 statusCode: 200,
-                message: 'Vendor has been found!',
-                data: vendor,
+                message: 'Product has been found!',
+                data: product,
                 error: null
             }
         } else {
             return {
                 success: false,
                 statusCode: 404,
-                message: "Vendor not found",
+                message: "Product not found",
                 data: null,
-                error: `There are no Vendor with this filter ${filter}!!`
+                error: `There are no product with this filter ${filter}!!`
             }
         }
 
@@ -74,13 +76,13 @@ exports.findVendor = async (filter, select, populate) => {
 
 exports.create = async (data) => {
     try {
-        const vendor = await Vendor.create(data);
+        const product = await Product.create(data);
 
         return {
             success: true,
             statusCode: 201,
-            message: "Vendor has been created successfully",
-            data: vendor,
+            message: "product has been created successfully",
+            data: product,
             error: null
         };
     } catch (error) {
@@ -94,14 +96,14 @@ exports.create = async (data) => {
     }
 };
 
-exports.updateVendor = async (filter, update, options) => {
+exports.updateProduct = async (filter, update, options) => {
     try {
-        const result = await Vendor.updateOne(filter, update, options);
+        const result = await Product.updateOne(filter, update, options);
         
         if (result.matchedCount === 1) {
             return {
                 success: true,
-                message: "Vendor has been updated successfully",
+                message: "Product has been updated successfully",
                 statusCode: 200,
                 data: null,
                 error: null
@@ -110,9 +112,9 @@ exports.updateVendor = async (filter, update, options) => {
             return {
                 success: false,
                 statusCode: 404,
-                message: "Vendor not found",
+                message: "Product not found",
                 data: null,
-                error: `There are no Vendor with this filter ${filter}!!`
+                error: `There are no product with this filter ${filter}!!`
             }
         }
     } catch (error) {
@@ -126,7 +128,7 @@ exports.updateVendor = async (filter, update, options) => {
     }
 };
 
-exports.deleteVendor = async (filter) => {
+exports.deleteProduct = async (filter) => {
     try {
         const result = await model.deleteOne(filter);
 
@@ -134,15 +136,15 @@ exports.deleteVendor = async (filter) => {
             return {
                 success: false,
                 statusCode: 404,
-                message: "Vendor not found",
+                message: "Product not found",
                 data: null,
-                error: `There are no Vendor with this filter ${filter}!!`
+                error: `There are no product with this filter ${filter}!!`
             }
         } else {
             return {
                 success: true,
                 statusCode: 204,
-                message: "Vendor successfully deleted",
+                message: "Product successfully deleted",
                 data: null,
                 error: null
             }
@@ -158,24 +160,24 @@ exports.deleteVendor = async (filter) => {
     }
 }
 
-exports.findAndUpdateVendor = async (filter, update, select, populate, options) => {
+exports.findAndUpdateProduct = async (filter, update, select, populate, options) => {
     try {
-        const vendor = await Vendor.findOneAndUpdate(filter, update, options).select(select).populate(populate);
-        if (vendor) {
+        const product = await Product.findOneAndUpdate(filter, update, options).select(select).populate(populate);
+        if (product) {
             return {
                 success: true,
                 statusCode: 200,
-                message: "Vendor has been updated successfully",
-                data: vendor,
+                message: "Product has been updated successfully",
+                data: product,
                 error: null
             };
         } else {
             return {
                 success: false,
                 status: 404,
-                message: "No Vendor has been found",
+                message: "No product has been found",
                 data: null,
-                error: `There are no Vendor with this filter ${filter}!!`
+                error: `There are no product with this filter ${filter}!!`
             }
         }
     } catch (error) {
@@ -189,23 +191,23 @@ exports.findAndUpdateVendor = async (filter, update, select, populate, options) 
     }
 };
 
-exports.deleteVendors = async (filter) => {
+exports.deleteProducts = async (filter) => {
     try {
-        const result = await model.deleteMany(filter);
+        const result = await Product.deleteMany(filter);
 
         if (result.deletedCount === 0) {
             return {
                 success: false,
                 statusCode: 404,
-                message: "Vendor not found",
+                message: "Product not found",
                 data: null,
-                error: `There are no Vendor with this filter ${filter}!!`
+                error: `There are no product with this filter ${filter}!!`
             }
         } else {
             return {
                 success: true,
                 statusCode: 204,
-                message: "Vendor successfully deleted",
+                message: "Product successfully deleted",
                 data: null,
                 error: null
             }

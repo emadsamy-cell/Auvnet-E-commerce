@@ -3,7 +3,7 @@ const router = require("express").Router();
 const schema = require('../../validation/vendor.validation');
 const { validation } = require('../../middlewares/validation');
 const isAuth = require('../../middlewares/auth');
-const {uploadMultipleFields } = require('../../middlewares/upload');
+const { uploadMultipleFields } = require('../../middlewares/upload');
 const vendorController = require('../../controllers/vendor.controller');
 
 const {
@@ -12,15 +12,14 @@ const {
 } = require('../../endpoints/vendor.endpoints')
 
 const cpUpload = [
-    {type: 'image', name: 'profileImage', maxCount: 1}, 
-    {type: 'image', name: 'coverImage', maxCount: 1}
+    { type: 'image', name: 'profileImage', maxCount: 1 },
+    { type: 'image', name: 'coverImage', maxCount: 1 }
 ];
 
 // Authentication
 router.route('/auth/signIn').post(validation(schema.vendorSignIn), vendorController.signIn);
 router.route('/auth/verify-otp').post(validation(schema.verifyOTP), vendorController.verifyOTP);
-router.route('/auth/resend-otp').post(validation(schema.resendOTP), vendorController.resendOTP);
-router.route('/auth/forget-password').post(validation(schema.resendOTP), vendorController.forgetPassword);
+router.route('/auth/forget-password').post(validation(schema.forgetPassword), vendorController.forgetPassword);
 router.route('/auth/reset-password').patch(validation(schema.resetPassword), vendorController.resetPassword);
 
 // Profile Management

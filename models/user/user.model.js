@@ -123,10 +123,6 @@ const userSchema = mongoose.Schema({
         type: String,
         default: 'user'
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
     coins: {
         type: Number,
         default: 0
@@ -169,7 +165,15 @@ const userSchema = mongoose.Schema({
         type: Date,
         select: false
     },
-});
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        select: false
+    }
+}, {
+    timestamps: true
+    }
+);
 
 userSchema.index({ location: '2dsphere' });
 

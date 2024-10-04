@@ -9,9 +9,9 @@ const { createResponse } = require('../utils/createResponse');
 exports.signIn = asyncHandler(async (req, res) => {
     const { userName, password } = req.body;
 
-    // check if the userName or email exists
+    // check if the userName exists
     const isExist = await vendorRepo.findVendor(
-        { userName },
+        { userName, isDeleted: false },
         "-OTP -OTPExpiresAt -location -__v"
     );
 
@@ -61,9 +61,9 @@ exports.signIn = asyncHandler(async (req, res) => {
 exports.verifyOTP = asyncHandler(async (req, res) => {
     const { email, OTP } = req.body;
     
-    // find the vendor and update the OTP to null
+    // find the vendor with this email
     const vendor = await vendorRepo.findVendor(
-        { email },
+        { email, isDeleted: false },
         "status OTP OTPExpiresAt _id"
     )
 
@@ -107,68 +107,15 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
     );
 });
 
-exports.resendOTP = asyncHandler(async (req, res) => {
-    const { email } = req.body;
-
-    // generate otp code
-    const OTP = otpManager.generateOTP(); 
-
-    // Add OTP code to this email
-    const vendor = await vendorRepo.findVendor(
-        { email },
-        "status _id",
-    );
-
-    // email not found
-    if (!vendor.success) {
-        return res.status(vendor.statusCode).json(
-                createResponse(vendor.success, "This email has no accounts", vendor.statusCode, vendor.error)
-        );
-    }
-
-    // check if the account is inactive
-    console.log(vendor.data)
-    if (vendor.data.status === "inactive") {
-        return res.status(401).json(
-            createResponse(false, "Your account has been suspended. Please contact support for further assistance.", 401)
-        );
-    }
-
-    // update the vendor with the OTP
-    await vendorRepo.updateVendor(
-        { _id: vendor.data._id },
-        { OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
-    );
-
-    // send email to the vendor
-    const result = await mailManager.emailSetup("OTPVerification", {
-        email: email,
-        subject: 'OTP verification',
-        OTP
-    });
-
-    // if there are any error in sending the message
-    if (!result.success) {
-        return res.status(result.statusCode).json(
-            createResponse(result.success, "There are something wrong", result.statusCode, result.error)
-        )
-    }
-
-    // send result
-    return res.status(result.statusCode).json(
-        createResponse(true, "OTP has been sent to your email", result.statusCode)
-    );
-});
-
 exports.forgetPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
     // generate otp code
     const OTP = otpManager.generateOTP(); 
 
-    // Add OTP code to this email
+    // Find vendor with this email
     const vendor = await vendorRepo.findVendor(
-        { email },
+        { email, isDeleted: false },
         "status _id",
     );
 
@@ -214,14 +161,12 @@ exports.forgetPassword = asyncHandler(async (req, res) => {
 
 exports.resetPassword = asyncHandler(async (req, res) => {
     let { email, password } = req.body;
-    password = await passwordManager.hashPassword(password);
 
-    // Update user with email and otp is null then update password
+    // Find Vendor with this Email
     const vendor = await vendorRepo.findVendor(
-        { email },
+        { email, isDeleted: false },
         "OTP OTPExpiresAt _id status"
     );
-
 
     // email not found
     if (!vendor.success) {
@@ -237,10 +182,17 @@ exports.resetPassword = asyncHandler(async (req, res) => {
         );
     }
 
-    // Update the vendor with new password
+    if (vendor.data.OTP !== null) {
+        return res.status(403).json(
+            createResponse(vendor.success, "Unauthorized to preform this action", vendor.statusCode, vendor.error)
+        );
+    }
+
+    // Update the vendor with new password and OTP to 1
+    password = await passwordManager.hashPassword(password);
     let result = await vendorRepo.updateVendor(
         { _id: vendor.data._id },
-        { password }
+        { password, OTP: "Not Verified OTP" }
     );
 
     if (!result.success) {
@@ -273,7 +225,7 @@ exports.getProfile = asyncHandler(async (req, res) => {
         { _id: req.user._id },
         "name country city region primaryPhone secondaryPhone gender profileImage coverImage _id "
     );
-    console.log(vendor)
+
     if (!vendor.success) {
         return res.status(vendor.statusCode).json(
             createResponse(vendor.success, "This vendor is not found", vendor.statusCode, vendor.error)
@@ -307,21 +259,14 @@ exports.updateProfile = asyncHandler(async (req, res) => {
 
     
     // update vendor with id
-    const result = await vendorRepo.findAndUpdateVendor(
-        { _id: req.user._id, status: "active" },
+    const result = await vendorRepo.updateVendor(
+        { _id: req.user._id },
         req.body,
-        "name country city region phoneNumbers gender profileImage coverImage _id",
     );
-
-    if (!result.success) {
-        return res.status(result.statusCode).json(
-            createResponse(result.success, "This vendor is not found", result.statusCode, result.error)
-        );
-    }
 
     // send the result
     return res.status(result.statusCode).json(
-        createResponse(result.success, "Vendor updated successfully", result.statusCode, null, result.data)
+        createResponse(result.success, result.message, result.statusCode, null, result.data)
     );
 });
 
@@ -331,19 +276,12 @@ exports.changePassword = asyncHandler(async (req, res) => {
     // get the vendor with id 
     const vendor = await vendorRepo.findVendor(
         { _id: req.user._id },
-        "password status"
+        "password"
     );
 
     if (!vendor.success) {
         return res.status(vendor.statusCode).json(
             createResponse(vendor.success, "This vendor is not found", vendor.statusCode, vendor.error)
-        );
-    }
-
-    // check if the account is inactive
-    if (vendor.data.status === "inactive") {
-        return res.status(401).json(
-            createResponse(false, "Your account has been suspended. Please contact support for further assistance.", 401)
         );
     }
 

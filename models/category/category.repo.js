@@ -128,6 +128,38 @@ exports.updateCategory = async (filter, update, options) => {
     }
 };
 
+exports.updateCategories = async (filter, update, options) => {
+    try {
+        const result = await Category.updateMany(filter, update, options);
+        
+        if (result.matchedCount > 0) {
+            return {
+                success: true,
+                message: "Category has been updated successfully",
+                statusCode: 200,
+                data: null,
+                error: null
+            };
+        } else {
+            return {
+                success: false,
+                statusCode: 404,
+                message: "Category not found",
+                data: null,
+                error: `There are no Category with this filter ${filter}!!`
+            }
+        }
+    } catch (error) {
+        return {
+            success: false,
+            statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
+            error
+        };
+    }
+};
+
 exports.deleteCategory = async (filter) => {
     try {
         const result = await model.deleteOne(filter);

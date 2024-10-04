@@ -7,6 +7,12 @@ const {
   DELETE_ADMIN
 } = require("../../endpoints/admin.endpoint");
 
+const {
+  CREATE_COUPON,
+  GET_COUPONS,
+  GET_COUPON
+} = require("../../endpoints/coupon.endpoint")
+
 // Category Endpoints Policy
 const {
   GET_CATEGORY,
@@ -16,7 +22,16 @@ const {
 } = require("../../endpoints/category.endpoints");
 
 module.exports = [
-  GET_PROFILE, UPDATE_PROFILE, CREATE_ACCOUNT, GET_ADMINS, UPDATE_ROLE, DELETE_ADMIN,
+  
+  GET_PROFILE,
+  UPDATE_PROFILE,
+  CREATE_ACCOUNT,
+  GET_ADMINS,
+  UPDATE_ROLE,
+  DELETE_ADMIN,
+  CREATE_COUPON,
+  GET_COUPONS,
+  GET_COUPON,
 
   GET_CATEGORY,
   CREATE_CATEGORY,

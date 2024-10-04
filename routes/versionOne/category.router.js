@@ -16,6 +16,8 @@ const {
 router.route('/').get(validation(schema.getCategories), isAuth(GET_CATEGORY), categoryController.getCategories);
 router.route('/create').post(validation(schema.createCategory), isAuth(CREATE_CATEGORY), categoryController.createCategory);
 router.route('/update/:id').patch(validation(schema.updateCategory), isAuth(UPDATE_CATEGORY), categoryController.updateCategory);
-router.route('/delete/:id').delete(validation(schema.deleteCategory), isAuth(DELETE_CATEGORY), categoryController.deleteCategory);
+router.route('/delete/:id').patch(validation(schema.deleteCategory), isAuth(DELETE_CATEGORY), categoryController.deleteCategory);
+router.route('/restore/:id').patch(validation(schema.deleteCategory), isAuth(DELETE_CATEGORY), categoryController.restoreCategory);
+
 
 module.exports = router;

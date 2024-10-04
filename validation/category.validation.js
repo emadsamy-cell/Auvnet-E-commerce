@@ -61,15 +61,7 @@ exports.updateCategory = {
             'string.base': 'Name should be a type of text',
             'string.empty': 'Name cannot be empty',
             'string.max': 'Name should have at most 30 characters',
-        }),
-        parent: Joi.string()
-        .length(24)
-        .allow(null)
-        .messages({
-            'string.base': 'Parent should be a type of text',
-            'string.empty': 'Parent cannot be empty',
-            'string.length': 'Parent should have 24 characters',
-        }),
+        })
     }),
 };
 

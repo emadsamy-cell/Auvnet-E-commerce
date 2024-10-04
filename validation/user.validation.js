@@ -104,6 +104,9 @@ exports.verifyOTP = {
       .required()
       .messages({
         'string.base': 'OTP should be a type of text',
+        'string.empty': 'OTP cannot be empty',
+        'string.min': 'OTP should have at least 3 characters',
+        'string.max': 'OTP should have at most 8 characters',
         'any.required': 'OTP is required'
       }),
     email: Joi.string()

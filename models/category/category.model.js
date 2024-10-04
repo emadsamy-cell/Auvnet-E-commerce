@@ -7,7 +7,7 @@ const CategorySchema = mongoose.Schema({
     },
     depth: {
         type: Number,
-        required: true
+        default: 1
     },
     parent: {
         type: mongoose.Schema.Types.ObjectId,
@@ -24,6 +24,10 @@ const CategorySchema = mongoose.Schema({
         ref: 'Admin',
         default: null,
         select: false
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
     }
 },  {
     toJSON: { virtuals: true },
