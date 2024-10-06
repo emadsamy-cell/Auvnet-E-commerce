@@ -165,15 +165,6 @@ exports.updateVendorProfile = {
 
 exports.changeUerPassword = {
   body: Joi.object({
-    currentPassword: Joi.string()
-      .min(8)
-      .required()
-      .messages({
-        'string.base': 'Password should be a type of text',
-        'string.empty': 'Password cannot be empty',
-        'string.min': 'Password should have at least 8 characters',
-        'any.required': 'Password is required'
-      }),
     newPassword: Joi.string()
       .min(8)
       .required()

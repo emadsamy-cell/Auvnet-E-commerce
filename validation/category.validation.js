@@ -56,11 +56,13 @@ exports.updateCategory = {
     }),
     body: Joi.object({
         name: Joi.string()
+        .required()
         .max(30)
         .messages({
             'string.base': 'Name should be a type of text',
             'string.empty': 'Name cannot be empty',
             'string.max': 'Name should have at most 30 characters',
+            'any.required': 'Name is required'
         })
     }),
 };

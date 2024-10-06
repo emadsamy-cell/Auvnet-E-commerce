@@ -24,6 +24,11 @@ const invalidPhoneNumberLength = "0100000000";
 const validGender = "Male";
 const invalidGender = "notGender";
 
+exports.adminToken;
+exports.userToken;
+exports.vendorToken;
+exports.userID;
+exports.incorrectUserID = '670019dbeed4a3cadd58bee1'
 exports.validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NmY5ODBkOWUwOWM3YTYwY2YwOTgyZmUiLCJ1c2VyTmFtZSI6ImVtYWQiLCJyb2xlIjoidXNlciIsImlhdCI6MTcyNzYyNzYzMiwiZXhwIjoxNzMwMjE5NjMyfQ.Ufh0Qtnqik1-TO-sfU5UYfgZmxnGXCPVczru442ET38" 
 exports.inValidToken = "invalid"
 
@@ -279,30 +284,20 @@ exports.onlyLongitudeUpdateUserProfileData = {
 
 // ____________________ Change Password _____________________________
 exports.validChangePasswordData = {
-    currentPassword: validPassword,
     newPassword: validPassword,
     confirmPassword: validPassword
 };
 
-exports.invalidCurrentPasswordChangePasswordData = {
-    currentPassword: invalidPassword,
-    newPassword: validPassword,
+exports.invalidNewPasswordChangePasswordData = {
+    newPassword: invalidPassword,
     confirmPassword: validPassword
 };
 
 exports.missingNewPasswordChangePasswordData = {
-    currentPassword: validPassword,
     confirmPassword: validPassword
 };
 
 exports.invalidConfirmPasswordNewPasswordData = {
-    currentPassword: validPassword,
     newPassword: validPassword,
     confirmPassword: incorrectPassword
-};
-
-exports.incorrectCurrentPasswordChangePasswordData = {
-    currentPassword: incorrectPassword,
-    newPassword: validPassword,
-    confirmPassword: validPassword
 };

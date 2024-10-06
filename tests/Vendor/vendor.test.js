@@ -414,7 +414,7 @@ describe("___Update Profile___", () => {
 describe("___Change Password___", () => {
     it("should return status 400 when invalid password length less than 8 characters", async () => {
         const response = await supertest(app).patch("/v1/vendor/profile/change-password").set("Authorization", `Bearer ${userData.validToken}`)
-        .send(userData.invalidCurrentPasswordChangePasswordData);
+        .send(userData.invalidNewPasswordChangePasswordData);
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("error");
@@ -437,14 +437,6 @@ describe("___Change Password___", () => {
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("error");
         expect(response.body.message).toBe("validation error");
-    });
-
-    it("should return status 401 when incorrect current password", async () => {
-        const response = await supertest(app).patch("/v1/vendor/profile/change-password").set("Authorization", `Bearer ${data.accessToken}`)
-        .send(userData.incorrectCurrentPasswordChangePasswordData);
-
-        expect(response.status).toBe(401);
-        expect(response.body.message).toBe("Incorrect password");
     });
 
     it("should return status 401 when token is missing", async () => {

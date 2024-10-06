@@ -6,17 +6,32 @@ const { createResponse } = require('../utils/createResponse');
 exports.getCategories = asyncHandler(async (req, res, next) => {
     const { limit, skip } = paginate(req.query.page, req.query.size);
 
-    const result = await categoryRepo.getList(
-        { depth: 1, isDeleted: false },
-        '-__v -depth -parent',
-        { 
-            path: 'subCategories', select: '-__v -depth', match: { isDeleted: false }, populate: { 
-            path: 'subCategories', select: '-__v -depth', match: { isDeleted: false } }
-        },
-        skip,
-        limit,
-        { createdAt: -1 }
-    );
+    let result;
+    if (req.user.role === 'vendor' || req.user.role === 'user') {
+        result = await categoryRepo.getList(
+            { depth: 1, isDeleted: false },
+            '-__v -depth -parent -isDeleted',
+            { 
+                path: 'subCategories', select: '-__v -depth -isDeleted', match: { isDeleted: false }, populate: { 
+                path: 'subCategories', select: '-__v -depth -isDeleted', match: { isDeleted: false } }
+            },
+            skip,
+            limit,
+            { createdAt: -1 }
+        );
+    } else {
+        result = await categoryRepo.getList(
+            { depth: 1 },
+            '-__v -depth -parent',
+            { 
+                path: 'subCategories', select: '-__v -depth', populate: { 
+                path: 'subCategories', select: '-__v -depth',}
+            },
+            skip,
+            limit,
+            { createdAt: -1 }
+        );
+    }
 
     res.status(result.statusCode).json(
         createResponse(result.success, result.message, result.statusCode, result.error, result.data)
@@ -30,7 +45,7 @@ exports.createCategory = asyncHandler(async (req, res, next) => {
     // Check if the parent category exist
     if(!result.success && req.body.parent !== null) {
         return res.status(404).json(
-            createResponse(result.success, "Parent Category not found", 404)
+            createResponse(result.success, "Parent Category not found or deleted", 404)
         );
     }
 
@@ -56,7 +71,7 @@ exports.createCategory = asyncHandler(async (req, res, next) => {
 exports.updateCategory = asyncHandler(async (req, res, next) => {
     // Update the category
     const result = await categoryRepo.updateCategory(
-        { _id: req.params.id }, 
+        { _id: req.params.id, isDeleted: false }, 
         req.body
     );
 
