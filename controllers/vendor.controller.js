@@ -5,6 +5,7 @@ const tokenManager = require('../helpers/tokenManager');
 const mailManager = require('../utils/emailService');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { createResponse } = require('../utils/createResponse');
+const { paginate } = require("../utils/pagination");
 
 exports.signIn = asyncHandler(async (req, res) => {
     const { userName, password } = req.body;
@@ -60,7 +61,7 @@ exports.signIn = asyncHandler(async (req, res) => {
 
 exports.verifyOTP = asyncHandler(async (req, res) => {
     const { email, OTP } = req.body;
-    
+
     // find the vendor with this email
     const vendor = await vendorRepo.findVendor(
         { email, isDeleted: false },
@@ -111,7 +112,7 @@ exports.forgetPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
     // generate otp code
-    const OTP = otpManager.generateOTP(); 
+    const OTP = otpManager.generateOTP();
 
     // Find vendor with this email
     const vendor = await vendorRepo.findVendor(
@@ -122,7 +123,7 @@ exports.forgetPassword = asyncHandler(async (req, res) => {
     // email not found
     if (!vendor.success) {
         return res.status(vendor.statusCode).json(
-                createResponse(vendor.success, "This email has no accounts", vendor.statusCode, vendor.error)
+            createResponse(vendor.success, "This email has no accounts", vendor.statusCode, vendor.error)
         );
     }
 
@@ -241,7 +242,7 @@ exports.getProfile = asyncHandler(async (req, res) => {
 exports.updateProfile = asyncHandler(async (req, res) => {
     // check if coordinates is exist
     if (req.body.latitude && req.body.longitude) {
-        const {latitude, longitude} = req.body;
+        const { latitude, longitude } = req.body;
         req.body.location = {
             type: "Point",
             coordinates: [latitude * 1, longitude * 1]
@@ -257,7 +258,7 @@ exports.updateProfile = asyncHandler(async (req, res) => {
         req.body.coverImage = req.files.coverImage[0];
     }*/
 
-    
+
     // update vendor with id
     const result = await vendorRepo.updateVendor(
         { _id: req.user._id },
@@ -305,3 +306,94 @@ exports.changePassword = asyncHandler(async (req, res) => {
         createResponse(result.success, "Password has been changed successfully", result.statusCode)
     );
 });
+
+//______________________________________________Vendor Management______________________________________________________
+
+// Create vendor account
+exports.createAccount = asyncHandler(async (req, res) => {
+    const { name, userName, email, password } = req.body;
+    // Hash password
+    const hashedPassword = await passwordManager.hashPassword(password);
+
+    // Save vendor details to database
+    const result = await vendorRepo.create({ name, userName, email, password: hashedPassword, createdBy: req.user._id });
+    if (!result.success) {
+        return res.status(result.statusCode).json(createResponse(result.success, result.message, result.statusCode));
+    }
+
+    // Send email to vendor with credentials
+    const emailSent = await sendEmailWithCredentials({ name, userName, email, password });
+    if (!emailSent.success) {
+        return res.status(emailSent.status).json(createResponse(emailSent.success, emailSent.message, emailSent.statusCode, emailSent.error));
+    }
+
+    return res.status(201).json(createResponse(true, "Vendor account created successfully", 201, null, { name, userName, email }));
+});
+
+// Send email to admin with credentials
+const sendEmailWithCredentials = async (vendor) => {
+    const emailOptions = {
+        name: vendor.name,
+        email: vendor.email,
+        subject: "Vendor Account Credentials",
+        userName: vendor.userName,
+        password: vendor.password,
+        role: "Vendor"
+    };
+
+    const emailSent = await mailManager.emailSetup("accountCredentials", emailOptions);
+    return emailSent;
+};
+
+// Get all vendors
+exports.getVendors = asyncHandler(async (req, res) => {
+    const filter = {}
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.isDeleted) filter.isDeleted = req.query.isDeleted;
+
+    const { page, size } = req.query;
+    const options = paginate(page, size);
+
+    const vendors = await vendorRepo.getList(
+        filter,
+        "name userName email primaryPhone isDeleted status",
+        [{ path: "createdBy", select: "userName email" }],
+        options.skip,
+        options.limit,
+        { createdAt: -1 }
+    );
+    return res.status(200).json(createResponse(true, "Vendors fetched successfully", 200, null, vendors.data));
+});
+
+// Update vendor status
+exports.updateStatus = asyncHandler(async (req, res) => {
+    const { status } = req.body;
+    const { vendorId } = req.params;
+
+    // Update vendor status
+    const result = await vendorRepo.updateVendor({ _id: vendorId }, { status });
+    if (!result.success) {
+        return res.status(result.statusCode).json(createResponse(result.success, result.message, result.statusCode));
+    }
+
+    return res.status(200).json(createResponse(true, "Vendor status updated successfully", 200));
+});
+
+// Delete/unDelete admin
+exports.delete = asyncHandler(async (req, res) => {
+    const { vendorId } = req.params;
+    const isDeleted = req.method === "DELETE" ? true : false;
+
+    const result = await vendorRepo.updateVendor(
+        { _id: vendorId },
+        { isDeleted }
+    );
+    if (!result.success) {
+        return res.status(result.statusCode).json(createResponse(result.success, result.message, result.statusCode));
+    }
+
+    return req.method === "DELETE" ?
+        res.status(204).json(createResponse(result.success, result.message, 204))
+        :
+        res.status(200).json(createResponse(result.success, "Vendor is restored successfully", 200))
+})

@@ -8,7 +8,11 @@ const vendorController = require('../../controllers/vendor.controller');
 
 const {
     GET_VENDOR,
-    UPDATE_VENDOR
+    UPDATE_VENDOR,
+    CREATE_VENDOR,
+    GET_VENDORS,
+    UPDATE_STATUS,
+    DELETE_VENDOR
 } = require('../../endpoints/vendor.endpoints')
 
 const cpUpload = [
@@ -26,5 +30,12 @@ router.route('/auth/reset-password').patch(validation(schema.resetPassword), ven
 router.route('/profile/').get(isAuth(GET_VENDOR), vendorController.getProfile);
 router.route('/profile/update').patch(uploadMultipleFields(cpUpload), validation(schema.updateVendorProfile), isAuth(UPDATE_VENDOR), vendorController.updateProfile);
 router.route('/profile/change-password').patch(validation(schema.changeUerPassword), isAuth(UPDATE_VENDOR), vendorController.changePassword);
+
+// Vendor Management
+router.route('/').post(validation(schema.createVendor), isAuth(CREATE_VENDOR), vendorController.createAccount);
+router.route('/').get(validation(schema.getVendors), isAuth(GET_VENDORS), vendorController.getVendors);
+router.route('/:vendorId/status').patch(validation(schema.updateStatus),isAuth(UPDATE_STATUS), vendorController.updateStatus);
+router.route('/:vendorId').delete(validation(schema.deleteVendor), isAuth(DELETE_VENDOR), vendorController.delete);
+router.route('/:vendorId/restore').patch(validation(schema.deleteVendor), isAuth(DELETE_VENDOR), vendorController.delete);
 
 module.exports = router;

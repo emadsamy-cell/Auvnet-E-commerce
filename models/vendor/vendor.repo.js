@@ -10,24 +10,25 @@ const Vendor = require('./vendor.model');
 
 exports.getList = async (filter, select, populate, skip, limit, sort) => {
     try {
-        const [ vendors, vendorCount ] = await Promise.all([
+        const [vendors, vendorCount] = await Promise.all([
             Vendor.find(filter).select(select).populate(populate).skip(skip).limit(limit).sort(sort),
             Vendor.countDocuments(filter)
         ]);
 
-        const pages = Math.ceil(vendorCount / limit);
+        const totalPages = Math.ceil(vendorCount / limit);
 
         return {
             success: true,
             statusCode: 200,
             message: "Vendors has been found!",
             data: {
+                total: vendorCount,
+                totalPages,
                 vendors,
-                pages
             },
             error: null
         };
-        
+
     } catch (error) {
         return {
             success: false,
@@ -43,7 +44,7 @@ exports.findVendor = async (filter, select, populate) => {
     try {
         const vendor = await Vendor.findOne(filter).select(select).populate(populate);
 
-        if(vendor) {
+        if (vendor) {
             return {
                 success: true,
                 statusCode: 200,
@@ -84,6 +85,18 @@ exports.create = async (data) => {
             error: null
         };
     } catch (error) {
+        console.log(error)
+        if (error.code === 11000) {
+            // Duplicate key error (unique constraint violation)
+            const field = Object.keys(error.keyPattern)[0];
+            return {
+                success: false,
+                statusCode: 409,
+                message: `${field} already exists. Please choose a different one.`,
+                data: null,
+                error
+            }
+        }
         return {
             success: false,
             statusCode: 500,
@@ -97,7 +110,7 @@ exports.create = async (data) => {
 exports.updateVendor = async (filter, update, options) => {
     try {
         const result = await Vendor.updateOne(filter, update, options);
-        
+
         if (result.matchedCount === 1) {
             return {
                 success: true,

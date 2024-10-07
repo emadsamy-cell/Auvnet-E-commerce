@@ -28,7 +28,7 @@ exports.vendorSignIn = {
 
 exports.verifyOTP = {
   body: Joi.object({
-    OTP : Joi.string()
+    OTP: Joi.string()
       .alphanum()
       .min(3)
       .max(8)
@@ -86,7 +86,7 @@ exports.resetPassword = {
         'string.min': 'Password should have at least 8 characters',
         'any.required': 'Password is required'
       }),
-  
+
     confirmPassword: Joi.any()
       .valid(Joi.ref('password'))
       .required()
@@ -156,11 +156,11 @@ exports.updateVendorProfile = {
       .messages({
         'any.only': 'Gender must be either Male or Female', // Custom message
       })
-  }).with('latitude', 'longitude') 
-  .with('longitude', 'latitude') 
-  .messages({
-    'object.with': 'Latitude and longitude must be provided together',
-  })
+  }).with('latitude', 'longitude')
+    .with('longitude', 'latitude')
+    .messages({
+      'object.with': 'Latitude and longitude must be provided together',
+    })
 }
 
 exports.changeUerPassword = {
@@ -190,5 +190,84 @@ exports.changeUerPassword = {
         'any.only': 'Confirm password does not match the password',
         'any.required': 'Confirm password is required'
       })
+  }),
+}
+
+// Vendor Management
+exports.createVendor = {
+  body: Joi.object({
+    name: Joi.string().required().messages({
+      'string.base': 'Name should be a type of text',
+      'string.empty': 'Name cannot be empty',
+      'any.required': 'Name is required'
+    }),
+    userName: Joi.string().min(3).max(30).required().messages({
+      'string.base': 'Username should be a type of text',
+      'string.empty': 'Username cannot be empty',
+      'string.min': 'Username should have at least 3 characters',
+      'string.max': 'Username should have at most 30 characters',
+      'any.required': 'Username is required'
+    }),
+    email: Joi.string().email().required().messages({
+      'string.base': 'Email should be a valid string',
+      'string.empty': 'Email cannot be empty',
+      'string.email': 'Please enter a valid email address',
+      'any.required': 'Email is required'
+    }),
+    password: Joi.string().required().pattern(new RegExp(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)).required()
+      .messages({
+        "string.empty": "Password is required",
+        "any.required": "Password is required",
+        'string.pattern.base': 'Minimum eight, at least one uppercase letter, one lowercase letter, one number and one special character'
+      })
+  })
+}
+
+exports.getVendors = {
+  query: Joi.object({
+    page: Joi.number().min(1).messages({
+      'number.base': 'Page should be a type of number',
+      'number.min': 'Page should be greater than 0',
+      'any.required': 'Page is required'
+    }),
+    size: Joi.number().min(1).messages({
+      'number.base': 'Limit should be a type of number',
+      'number.min': 'Limit should be greater than 0',
+      'any.required': 'Limit is required'
+    }),
+    isDeleted: Joi.boolean().messages({
+      'boolean.base': 'isDeleted should be a type of boolean',
+    }),
+    status: Joi.string().valid('active', 'inactive').messages({
+      'any.only': 'Status should be either active or inactive',
+    })
+  })
+}
+
+exports.updateStatus = {
+  body: Joi.object({
+    status: Joi.string().valid('active', 'inactive').required().messages({
+      'any.only': 'Status should be either active or inactive',
+      'any.required': 'Status is required'
+    })
+  }),
+  params: Joi.object({
+    vendorId: Joi.string().length(24).required().messages({
+      'string.base': 'vendorId should be a type of text',
+      'string.empty': 'vendorId cannot be empty',
+      'any.required': 'vendorId is required',
+      'string.length': 'vendorId should have 24 characters'
+    })
+  })
+}
+
+exports.deleteVendor = {
+  params: Joi.object({
+    vendorId: Joi.string().length(24).required().messages({
+      'string.base': 'vendorId should be a type of text',
+      'string.empty': 'vendorId cannot be empty',
+      'any.required': 'vendorId is required',
+      'string.length': 'vendorId should have 24 characters'
+    })
   }),
 }

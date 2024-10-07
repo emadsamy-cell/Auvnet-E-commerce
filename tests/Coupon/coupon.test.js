@@ -2,7 +2,6 @@ const request = require('supertest');
 const app = require('../../app'); // Adjust according to your app file
 const {
     validMasterToken,
-    invalidToken,
     couponBody,
     vendorId,
     validUserToken,
@@ -12,14 +11,17 @@ const {
     validVendorCoupon,
     inValidVendorCoupon,
     invalidUserTargetCoupon,
-    userCredentials,
     adminCouponId,
-    vendorCredentials,
     anotherVendorCoupon,
     expiredCouponId,
     usedCouponId,
     finishedCouponId,
     validCouponId,
+    deletedProductId,
+    categoryId,
+    deletedCategoryId,
+    productId,
+    unOwnedProduct,
 } = require('../Data');
 
 describe('___ Create Coupon___', () => {
@@ -128,12 +130,176 @@ describe('___ Create Coupon___', () => {
         expect(response.status).toBe(409);
         expect(response.body).toHaveProperty('message', "code already exists. Please choose a different one.");
     });
+
+    // Test Cases for Products (Vendor & Master)
+    describe('Coupon Product Tests', () => {
+        // Vendor Scenarios
+        it("should return status 400 when vendor adds empty products", async () => {
+            const body = {
+                ...couponBody,
+                code: "summer_empty_products",
+                products: []  // Empty products array
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validVendorToken}`)
+                .send(body);
+            expect(res.status).toBe(400);  // Adjust according to validation rules
+            expect(res.body).toHaveProperty('message', 'validation error');
+        });
+
+        it("should return status 400 when vendor adds a deleted product", async () => {
+            const body = {
+                ...couponBody,
+                code: "summer_deleted_product",
+                products: [deletedProductId]
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validVendorToken}`)
+                .send(body);
+
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty('message', 'One or more products are not found');
+        });
+
+        it("should return status 400 when vendor adds an unowned product", async () => {
+            const body = {
+                ...couponBody,
+                code: "summer_unowned_product",
+                products: [unOwnedProduct]
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validVendorToken}`)
+                .send(body);
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty('message', 'One or more products are not found');
+        });
+
+        it("should return status 201 when vendor adds a valid product", async () => {
+            const body = {
+                ...couponBody,
+                code: "summer_valid_product22",
+                products: [productId]
+            };
+
+            const response = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validVendorToken}`)
+                .send(body);
+
+            expect(response.status).toBe(201);
+        });
+
+        // Master Scenarios
+        it("should return status 400 when master adds empty products", async () => {
+            const body = {
+                ...couponBody,
+                code: "master_empty_products",
+                products: []
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validMasterToken}`)
+                .send(body);
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty('message', 'validation error');
+        });
+
+        it("should return status 400 when master adds a deleted product", async () => {
+            const body = {
+                ...couponBody,
+                code: "master_deleted_product",
+                products: [deletedProductId]
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validMasterToken}`)
+                .send(body);
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty('message', 'One or more products are not found');
+        });
+
+        it("should return status 201 when master adds a valid product", async () => {
+            const body = {
+                ...couponBody,
+                code: "master_valid_product",
+                products: [productId]
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validMasterToken}`)
+                .send(body);
+            expect(res.status).toBe(201);
+        });
+
+    });
+
+    // Test Cases for Categories
+    describe('Coupon Category Tests', () => {
+        it("should return status 400 when adding empty categories", async () => {
+            const body = {
+                ...couponBody,
+                code: "summer_empty_categories",
+                categories: []  // Empty categories array
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validVendorToken}`)
+                .send(body);
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty('message', 'validation error');
+        });
+
+        it("should return status 400 when adding a non-existent category", async () => {
+            const body = {
+                ...couponBody,
+                code: "summer_non_existent_category",
+                categories: ["6702a393ea24f11c340deeee"]
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validVendorToken}`)
+                .send(body);
+            expect(res.status).toBe(400);  // Adjust status code for non-existent category
+            expect(res.body).toHaveProperty('message', 'One or more categories are not found');
+        });
+
+        it("should return status 400 when adding a deleted category", async () => {
+            const body = {
+                ...couponBody,
+                code: "summer_deleted_category",
+                categories: [deletedCategoryId]
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validVendorToken}`)
+                .send(body);
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty('message', 'One or more categories are not found');
+        });
+
+        it("should return status 201 when adding a valid category", async () => {
+            const body = {
+                ...couponBody,
+                code: "summer_valid_category",
+                categories: [categoryId]
+            };
+            const res = await request(app)
+                .post("/v1/coupon")
+                .set("Authorization", `Bearer ${validVendorToken}`)
+                .send(body);
+            expect(res.status).toBe(201);
+        });
+
+    });
 });
 
 describe('___ Read Coupons___', () => {
     // 1. Test case for unauthenticated access
     it('should return 401 for unauthenticated users', async () => {
-        const response = await request(app).get('/v1/coupon'); 
+        const response = await request(app).get('/v1/coupon');
         expect(response.status).toBe(401);
         expect(response.body).toHaveProperty('message', 'Invalid Authorization Token !');
     });
@@ -146,8 +312,8 @@ describe('___ Read Coupons___', () => {
                 .set('Authorization', `Bearer ${validUserToken}`);
 
             expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('data'); 
-            expect(Array.isArray(response.body.data.coupons)).toBe(true); 
+            expect(response.body).toHaveProperty('data');
+            expect(Array.isArray(response.body.data.coupons)).toBe(true);
         });
     });
 
@@ -322,7 +488,6 @@ describe('___GET A COUPON___', () => {
 });
 
 describe('___ Update a Coupon ____', () => {
-
     // 1) Unauthenticated user
     it('should return status 401 if the user is not authenticated', async () => {
         const response = await request(app)
@@ -576,7 +741,6 @@ describe('___Restore A Coupon___', () => {
         expect(response.status).toBe(200);
     });
 });
-
 
 describe('___Claim A Coupon___', () => {
     const randomCouponId = '66fedfe25a0f834d9fbe82fb'; // Use a valid random ID format for MongoDB

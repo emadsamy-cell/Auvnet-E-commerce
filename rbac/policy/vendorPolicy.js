@@ -1,7 +1,7 @@
 // Vendor Endpoints Policy
 const {
     GET_VENDOR,
-    UPDATE_VENDOR
+    UPDATE_VENDOR,
 } = require('../../endpoints/vendor.endpoints');
 
 const {
