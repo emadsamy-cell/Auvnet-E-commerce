@@ -21,6 +21,20 @@ const {
     DELETE_CATEGORY
 } = require("../../endpoints/category.endpoints")
 
+// Users Endpoints Policy
+const {
+    LIST_USERS,
+    DELETE_USER
+} = require("../../endpoints/user.endpoints")
+
+// Vendor Endpoints Policy
+const {
+    CREATE_VENDOR,
+    GET_VENDORS,
+    UPDATE_STATUS,
+    DELETE_VENDOR
+} = require("../../endpoints/vendor.endpoints")
+
 module.exports = [
     GET_PROFILE,
     UPDATE_PROFILE,
