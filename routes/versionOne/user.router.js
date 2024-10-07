@@ -7,7 +7,9 @@ const { uploadSingleFile } = require('../../middlewares/upload');
 const userController = require('../../controllers/user.controller');
 const {
     GET_USER,
-    UPDATE_USER
+    UPDATE_USER,
+    LIST_USERS,
+    DELETE_USER
 } = require('../../endpoints/user.endpoints');
 
 // Authentication
@@ -22,5 +24,11 @@ router.route('/auth/reset-password').patch(validation(schema.resetPassword), use
 router.route('/profile/').get(isAuth(GET_USER), userController.getProfile);
 router.route('/profile/update').patch(uploadSingleFile('image', 'image'), validation(schema.updateUserProfile), isAuth(UPDATE_USER), userController.updateProfile);
 router.route('/profile/change-password').patch(validation(schema.changeUerPassword), isAuth(UPDATE_USER), userController.changePassword);
+
+// User Management
+
+router.route('/list').get(isAuth(LIST_USERS), userController.listUsers);
+router.route('/delete/:id').patch(isAuth(DELETE_USER), validation(schema.parameterID), userController.deleteUser);
+router.route('/restore/:id').patch(isAuth(DELETE_USER), validation(schema.parameterID), userController.restoreUser);
 
 module.exports = router;

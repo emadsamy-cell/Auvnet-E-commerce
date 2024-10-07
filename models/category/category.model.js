@@ -41,4 +41,6 @@ CategorySchema.virtual('subCategories', {
     justOne: false
 });
 
+CategorySchema.index({ depth: 1 })
+
 module.exports = mongoose.model('Category', CategorySchema);

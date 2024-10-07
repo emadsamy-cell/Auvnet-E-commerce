@@ -5,6 +5,7 @@ const tokenManager = require('../helpers/tokenManager');
 const mailManager = require('../utils/emailService');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { createResponse } = require('../utils/createResponse');
+const { paginate } = require('../utils/pagination');
 
 exports.signUp = asyncHandler(async (req, res) => {
     let { name, userName, email, password } = req.body;
@@ -330,27 +331,7 @@ exports.updateProfile = asyncHandler(async (req, res) => {
 });
 
 exports.changePassword = asyncHandler(async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-
-    // get the user with id
-    const user = await userRepo.findUser(
-        { _id: req.user._id },
-        "password"
-    );
-
-    if (!user.success) {
-        return res.status(user.statusCode).json(
-            createResponse(user.success, "This user is not found", user.statusCode, user.error)
-        );
-    }
-
-    // compare the old password with the current password
-    const matched = await passwordManager.comparePassword(currentPassword, user.data.password);
-    if (!matched) {
-        return res.status(401).json(
-            createResponse(false, "Incorrect password", 401)
-        );
-    }
+    const { newPassword } = req.body;
 
     // update the password with the new password
     const password = await passwordManager.hashPassword(newPassword);
@@ -368,5 +349,72 @@ exports.changePassword = asyncHandler(async (req, res) => {
     // send the result
     return res.status(result.statusCode).json(
         createResponse(result.success, "Password has been changed successfully", result.statusCode)
+    );
+});
+
+exports.listUsers = asyncHandler(async (req, res) => {
+    const { limit, skip } = paginate(req.query.page, req.query.size);
+
+    const users = await userRepo.getList(
+        {  },
+        "name email userName country city region phone gender coins image isDeleted",
+        null,
+        skip,
+        limit,
+        { createdAt: -1 }
+    )
+
+    res.status(users.statusCode).json(
+        createResponse(users.success, users.message, users.statusCode, users.error, users.data)
+    );
+});
+
+exports.deleteUser = asyncHandler(async (req, res) => {
+    const user = await userRepo.findUser({ _id: req.params.id }, "isDeleted");
+    
+    if (!user.success) {
+        return res.status(user.statusCode).json(
+            createResponse(user.success, "User not found", user.statusCode, user.error)
+        );
+    }
+
+    if (user.data.isDeleted) {
+        return res.status(422).json(
+            createResponse(false, "This user is deleted before", 422)
+        );
+    }
+
+    const result = await userRepo.updateUser(
+        { _id: req.params.id },
+        { isDeleted: true }
+    );
+
+    return res.status(204).json(
+        createResponse(result.success, "This user has been deleted successfully", 204, result.error)
+    );
+});
+
+exports.restoreUser = asyncHandler(async (req, res) => {
+    const user = await userRepo.findUser({ _id: req.params.id }, "isDeleted");
+    
+    if (!user.success) {
+        return res.status(user.statusCode).json(
+            createResponse(user.success, "User not found", user.statusCode, user.error)
+        );
+    }
+
+    if (!user.data.isDeleted) {
+        return res.status(422).json(
+            createResponse(false, "This user isn't deleted", 422)
+        );
+    }
+
+    const result = await userRepo.updateUser(
+        { _id: req.params.id },
+        { isDeleted: false }
+    );
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "User has been restored successfully", result.statusCode, result.error)
     );
 });

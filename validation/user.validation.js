@@ -59,7 +59,6 @@ exports.userSignUp = {
   }),
 };
 
-
 exports.userSignIn = {
   body: Joi.object({
     email: Joi.string()
@@ -166,18 +165,6 @@ exports.resetPassword = {
   }),
 }
 
-exports.token = {
-  headers: Joi.object({
-    authorization: Joi.string()
-      .required()
-      .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/) // Bearer token pattern
-      .messages({
-        'any.required': 'Authorization is required',
-        'string.pattern.base': 'Invalid token format'
-      })
-  })
-}
-
 exports.updateUserProfile = {
   body: Joi.object({
     name: Joi.string()
@@ -237,15 +224,6 @@ exports.updateUserProfile = {
 
 exports.changeUerPassword = {
   body: Joi.object({
-    currentPassword: Joi.string()
-      .min(8)
-      .required()
-      .messages({
-        'string.base': 'Password should be a type of text',
-        'string.empty': 'Password cannot be empty',
-        'string.min': 'Password should have at least 8 characters',
-        'any.required': 'Password is required'
-      }),
     newPassword: Joi.string()
       .min(8)
       .required()
@@ -264,3 +242,12 @@ exports.changeUerPassword = {
       })
   }),
 }
+
+exports.parameterID = {
+  params: Joi.object({
+    id: Joi.string()
+    .min(24)
+    .max(24)
+    .message('Id must be a valid 24-character hex string (MongoDB ObjectId).'),
+  }),
+} 

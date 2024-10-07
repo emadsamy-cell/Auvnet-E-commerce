@@ -147,6 +147,22 @@ const userSchema = mongoose.Schema({
             }
         }
     ],
+    likedCollections: [
+        {
+            collection: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Collection'
+            }
+        }
+    ],
+    dislikedCollections: [
+        {
+            collection: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Collection'                
+            }
+        }
+    ],
     couponClaimed: {
         type:mongoose.Schema.Types.ObjectId,
         ref: 'Coupon',

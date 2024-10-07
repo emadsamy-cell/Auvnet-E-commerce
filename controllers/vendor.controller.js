@@ -54,7 +54,7 @@ exports.signIn = asyncHandler(async (req, res) => {
     return res.status(200).json(
         createResponse(true, "Login successfully", 200, null, {
             token: accessToken,
-            user: isExist.data
+            vendor: isExist.data
         })
     );
 });
@@ -272,27 +272,7 @@ exports.updateProfile = asyncHandler(async (req, res) => {
 });
 
 exports.changePassword = asyncHandler(async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-
-    // get the vendor with id 
-    const vendor = await vendorRepo.findVendor(
-        { _id: req.user._id },
-        "password"
-    );
-
-    if (!vendor.success) {
-        return res.status(vendor.statusCode).json(
-            createResponse(vendor.success, "This vendor is not found", vendor.statusCode, vendor.error)
-        );
-    }
-
-    // compare the old password with the current password
-    const matched = await passwordManager.comparePassword(currentPassword, vendor.data.password);
-    if (!matched) {
-        return res.status(401).json(
-            createResponse(false, "Incorrect password", 401)
-        );
-    }
+    const {  newPassword } = req.body;
 
     // update the password with the new password
     const password = await passwordManager.hashPassword(newPassword);
