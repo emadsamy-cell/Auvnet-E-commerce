@@ -6,7 +6,7 @@ const productRepo = require("../models/product/product.repo");
 const categoryRepo = require("../models/category/category.repo");
 
 exports.getCouponsForUser = async (req) => {
-    const select = "couponType code discountType discountValue discountPercent status expireAt"
+    const select = "couponType code discountType expireAt status"
 
     // Use the filterBuilder to construct the coupon filter for the user
     const couponFilter = await this.filterBuilder(req);
@@ -15,7 +15,7 @@ exports.getCouponsForUser = async (req) => {
 }
 
 exports.getCouponsForVendor = async (req) => {
-    const select = "code discountType discountValue discountPercent status expireAt vendor admin totalUsed isDeleted"
+    const select = "code couponType discountType status expireAt isDeleted"
 
     // Use the filterBuilder to construct the coupon filter for the vendor
     const couponFilter = await this.filterBuilder(req);
@@ -24,7 +24,7 @@ exports.getCouponsForVendor = async (req) => {
 }
 
 exports.getCouponsForAdmin = async (req) => {
-    const select = "code discountType discountValue discountPercent status expireAt vendor admin totalUsed isDeleted"
+    const select = "code couponType discountType status expireAt isDeleted"
 
     // Use the filterBuilder to construct the coupon filter for the admin
     const couponFilter = await this.filterBuilder(req);

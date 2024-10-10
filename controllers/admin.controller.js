@@ -282,3 +282,18 @@ exports.deleteAdminController = asyncHandler(async (req, res) => {
     res.status(200).json(createResponse(deletedAdmin.success, "Admin is restored successfully", 200))
 })
 
+// Get admin by ID
+exports.getById = asyncHandler(async (req, res) => {
+  const adminId = req.params.adminId;
+
+  // Check if admin exists with the given id
+  const adminProfile = await adminRepo.isExist(
+    { _id: adminId },
+    "userName email phoneNumber"
+  );
+  if(!adminProfile.success) {
+    return res.status(adminProfile.statusCode).json(createResponse(adminProfile.success, adminProfile.message, adminProfile.statusCode));
+  }
+  return res.status(200).json(createResponse(true, "Admin profile fetched successfully", 200, null, adminProfile.data));
+});
+

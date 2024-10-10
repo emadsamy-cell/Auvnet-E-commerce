@@ -1,33 +1,11 @@
 const request = require('supertest');
 const app = require('../../app'); // Adjust according to your app file
-const {
-    validMasterToken,
-    couponBody,
-    vendorId,
-    validUserToken,
-    validVendorToken,
-    validUserTargetCoupon,
-    globalCoupon,
-    validVendorCoupon,
-    inValidVendorCoupon,
-    invalidUserTargetCoupon,
-    adminCouponId,
-    anotherVendorCoupon,
-    expiredCouponId,
-    usedCouponId,
-    finishedCouponId,
-    validCouponId,
-    deletedProductId,
-    categoryId,
-    deletedCategoryId,
-    productId,
-    unOwnedProduct,
-} = require('../Data');
+const data = require("../Data")
 
 describe('___ Create Coupon___', () => {
     it('should return status 401 if no authenticated user attempts to access the endpoint', async () => {
         const response = await request(app).post('/v1/coupon')
-        .send(couponBody);
+        .send(data.couponBody);
 
         expect(response.status).toBe(401);
         expect(response.body.message).toEqual("Invalid Authorization Token !");
@@ -36,7 +14,7 @@ describe('___ Create Coupon___', () => {
     it('should return 403 if not authorized user', async () => {
         const response = await request(app)
             .post('/v1/coupon')
-            .set('Authorization', `Bearer ${validUserToken}`).send(couponBody);
+            .set('Authorization', `Bearer ${data.validUserToken}`).send(data.couponBody);
         expect(response.status).toBe(403);
         expect(response.body.message).toEqual("Not allowed to perform this action !");
     });
@@ -44,7 +22,7 @@ describe('___ Create Coupon___', () => {
     it('should return 400 if no body is sent', async () => {
         const response = await request(app)
             .post('/v1/coupon')
-            .set('Authorization', `Bearer ${validMasterToken}`);
+            .set('Authorization', `Bearer ${data.validMasterToken}`);
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty('message', "validation error");
     });
@@ -52,9 +30,9 @@ describe('___ Create Coupon___', () => {
     it('should return 400 if both discount value and discount percent are provided', async () => {
         const response = await request(app)
             .post('/v1/coupon')
-            .set('Authorization', `Bearer ${validMasterToken}`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`)
             .send({
-                ...couponBody,
+                ...data.couponBody,
                 discountValue: 10,
                 discountPercent: 20,
             });
@@ -68,9 +46,9 @@ describe('___ Create Coupon___', () => {
     it('should return 400 if expiration date is in the past', async () => {
         const response = await request(app)
             .post('/v1/coupon')
-            .set('Authorization', `Bearer ${validMasterToken}`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`)
             .send({
-                ...couponBody,
+                ...data.couponBody,
                 expireAt: new Date(Date.now() - 1000).toISOString(), // Past date
             });
         expect(response.status).toBe(400);
@@ -83,9 +61,9 @@ describe('___ Create Coupon___', () => {
     it('should return 400 if couponUsage count is provided for unlimited usage', async () => {
         const response = await request(app)
             .post('/v1/coupon')
-            .set('Authorization', `Bearer ${validMasterToken}`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`)
             .send({
-                ...couponBody,
+                ...data.couponBody,
                 couponUsage: {
                     type: "unlimited",
                     count: 100,
@@ -101,9 +79,9 @@ describe('___ Create Coupon___', () => {
     it('should return 400 if products array is empty', async () => {
         const response = await request(app)
             .post('/v1/coupon')
-            .set('Authorization', `Bearer ${validMasterToken}`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`)
             .send({
-                ...couponBody,
+                ...data.couponBody,
                 products: [],
             });
         expect(response.status).toBe(400);
@@ -116,8 +94,8 @@ describe('___ Create Coupon___', () => {
     it('should return 201 and create coupon on success', async () => {
         const response = await request(app)
             .post('/v1/coupon')
-            .set('Authorization', `Bearer ${validMasterToken}`)
-            .send(couponBody);
+            .set('Authorization', `Bearer ${data.validMasterToken}`)
+            .send(data.couponBody);
         expect(response.status).toBe(201);
         expect(response.body).toHaveProperty('message', 'Coupon is created successfully'); // Adjust based on your success message
     });
@@ -125,8 +103,9 @@ describe('___ Create Coupon___', () => {
     it('should return 409 if coupon is duplicated', async () => {
         const response = await request(app)
             .post('/v1/coupon')
-            .set('Authorization', `Bearer ${validMasterToken}`)
-            .send(couponBody);
+            .set('Authorization', `Bearer ${data.validMasterToken}`)
+            .send(data.couponBody);
+
         expect(response.status).toBe(409);
         expect(response.body).toHaveProperty('message', "code already exists. Please choose a different one.");
     });
@@ -136,13 +115,13 @@ describe('___ Create Coupon___', () => {
         // Vendor Scenarios
         it("should return status 400 when vendor adds empty products", async () => {
             const body = {
-                ...couponBody,
+                ...data.couponBody,
                 code: "summer_empty_products",
                 products: []  // Empty products array
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validVendorToken}`)
+                .set("Authorization", `Bearer ${data.validVendorToken}`)
                 .send(body);
             expect(res.status).toBe(400);  // Adjust according to validation rules
             expect(res.body).toHaveProperty('message', 'validation error');
@@ -150,13 +129,12 @@ describe('___ Create Coupon___', () => {
 
         it("should return status 400 when vendor adds a deleted product", async () => {
             const body = {
-                ...couponBody,
-                code: "summer_deleted_product",
-                products: [deletedProductId]
+                ...data.couponBody,
+                products: [data.deletedProductId]
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validVendorToken}`)
+                .set("Authorization", `Bearer ${data.validVendorToken}`)
                 .send(body);
 
             expect(res.status).toBe(400);
@@ -165,13 +143,12 @@ describe('___ Create Coupon___', () => {
 
         it("should return status 400 when vendor adds an unowned product", async () => {
             const body = {
-                ...couponBody,
-                code: "summer_unowned_product",
-                products: [unOwnedProduct]
+                ...data.couponBody,
+                products: [data.unOwnedProduct]
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validVendorToken}`)
+                .set("Authorization", `Bearer ${data.validVendorToken}`)
                 .send(body);
             expect(res.status).toBe(400);
             expect(res.body).toHaveProperty('message', 'One or more products are not found');
@@ -179,14 +156,13 @@ describe('___ Create Coupon___', () => {
 
         it("should return status 201 when vendor adds a valid product", async () => {
             const body = {
-                ...couponBody,
-                code: "summer_valid_product22",
-                products: [productId]
+                ...data.couponBody,
+                products: [data.productId]
             };
 
             const response = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validVendorToken}`)
+                .set("Authorization", `Bearer ${data.validVendorToken}`)
                 .send(body);
 
             expect(response.status).toBe(201);
@@ -195,13 +171,12 @@ describe('___ Create Coupon___', () => {
         // Master Scenarios
         it("should return status 400 when master adds empty products", async () => {
             const body = {
-                ...couponBody,
-                code: "master_empty_products",
+                ...data.couponBody,
                 products: []
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validMasterToken}`)
+                .set("Authorization", `Bearer ${data.validMasterToken}`)
                 .send(body);
             expect(res.status).toBe(400);
             expect(res.body).toHaveProperty('message', 'validation error');
@@ -209,13 +184,12 @@ describe('___ Create Coupon___', () => {
 
         it("should return status 400 when master adds a deleted product", async () => {
             const body = {
-                ...couponBody,
-                code: "master_deleted_product",
-                products: [deletedProductId]
+                ...data.couponBody,
+                products: [data.deletedProductId]
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validMasterToken}`)
+                .set("Authorization", `Bearer ${data.validMasterToken}`)
                 .send(body);
             expect(res.status).toBe(400);
             expect(res.body).toHaveProperty('message', 'One or more products are not found');
@@ -223,13 +197,13 @@ describe('___ Create Coupon___', () => {
 
         it("should return status 201 when master adds a valid product", async () => {
             const body = {
-                ...couponBody,
-                code: "master_valid_product",
-                products: [productId]
+                ...data.couponBody,
+                code: "master2Product",
+                products: [data.productId]
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validMasterToken}`)
+                .set("Authorization", `Bearer ${data.validMasterToken}`)
                 .send(body);
             expect(res.status).toBe(201);
         });
@@ -240,13 +214,12 @@ describe('___ Create Coupon___', () => {
     describe('Coupon Category Tests', () => {
         it("should return status 400 when adding empty categories", async () => {
             const body = {
-                ...couponBody,
-                code: "summer_empty_categories",
+                ...data.couponBody,
                 categories: []  // Empty categories array
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validVendorToken}`)
+                .set("Authorization", `Bearer ${data.validVendorToken}`)
                 .send(body);
             expect(res.status).toBe(400);
             expect(res.body).toHaveProperty('message', 'validation error');
@@ -254,13 +227,12 @@ describe('___ Create Coupon___', () => {
 
         it("should return status 400 when adding a non-existent category", async () => {
             const body = {
-                ...couponBody,
-                code: "summer_non_existent_category",
+                ...data.couponBody,
                 categories: ["6702a393ea24f11c340deeee"]
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validVendorToken}`)
+                .set("Authorization", `Bearer ${data.validVendorToken}`)
                 .send(body);
             expect(res.status).toBe(400);  // Adjust status code for non-existent category
             expect(res.body).toHaveProperty('message', 'One or more categories are not found');
@@ -268,13 +240,12 @@ describe('___ Create Coupon___', () => {
 
         it("should return status 400 when adding a deleted category", async () => {
             const body = {
-                ...couponBody,
-                code: "summer_deleted_category",
-                categories: [deletedCategoryId]
+                ...data.couponBody,
+                categories: [data.deletedCategoryId]
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validVendorToken}`)
+                .set("Authorization", `Bearer ${data.validVendorToken}`)
                 .send(body);
             expect(res.status).toBe(400);
             expect(res.body).toHaveProperty('message', 'One or more categories are not found');
@@ -282,13 +253,13 @@ describe('___ Create Coupon___', () => {
 
         it("should return status 201 when adding a valid category", async () => {
             const body = {
-                ...couponBody,
-                code: "summer_valid_category",
-                categories: [categoryId]
+                ...data.couponBody,
+                code: "summerValid22",
+                categories: [data.categoryId]
             };
             const res = await request(app)
                 .post("/v1/coupon")
-                .set("Authorization", `Bearer ${validVendorToken}`)
+                .set("Authorization", `Bearer ${data.validVendorToken}`)
                 .send(body);
             expect(res.status).toBe(201);
         });
@@ -309,7 +280,7 @@ describe('___ Read Coupons___', () => {
         it('should return status 200 with coupons for a valid user', async () => {
             const response = await request(app)
                 .get('/v1/coupon')
-                .set('Authorization', `Bearer ${validUserToken}`);
+                .set('Authorization', `Bearer ${data.validUserToken}`);
 
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('data');
@@ -322,7 +293,7 @@ describe('___ Read Coupons___', () => {
         it('should return coupons for a valid vendor and match vendor ID', async () => {
             const response = await request(app)
                 .get('/v1/coupon')
-                .set('Authorization', `Bearer ${validVendorToken}`);
+                .set('Authorization', `Bearer ${data.validVendorToken}`);
 
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('data');
@@ -330,7 +301,7 @@ describe('___ Read Coupons___', () => {
 
             // Ensure all returned coupons belong to the vendor
             response.body.data.coupons.forEach(coupon => {
-                expect(coupon.vendor.toString()).toBe(vendorId.toString());
+                expect(coupon.vendor.toString()).toBe(data.vendorId.toString());
             });
         });
     });
@@ -340,14 +311,11 @@ describe('___ Read Coupons___', () => {
         it('should return all coupons for admin and match count', async () => {
             const response = await request(app)
                 .get('/v1/coupon')
-                .set('Authorization', `Bearer ${validMasterToken}`);
+                .set('Authorization', `Bearer ${data.validMasterToken}`);
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('data');
             expect(Array.isArray(response.body.data.coupons)).toBe(true);
-
-            // Ensure the returned coupons count matches expected count
-            const expectedCouponCount = 20; // Replace with the actual expected count
-            expect(response.body.data.total).toBe(expectedCouponCount);
+            expect(response.body.data.total).toBe(data.expectedCouponCount);
         });
     });
 });
@@ -359,7 +327,7 @@ describe('___GET A COUPON___', () => {
     // 1) Unauthenticated User
     it('should return 401 for unauthenticated user', async () => {
         const res = await request(app)
-            .get(`/v1/coupon/${validUserTargetCoupon}`);
+            .get(`/v1/coupon/${data.validUserTargetCoupon}`);
 
         expect(res.statusCode).toEqual(401);
         expect(res.body).toHaveProperty('message', 'Invalid Authorization Token !');
@@ -373,7 +341,7 @@ describe('___GET A COUPON___', () => {
             const randomId = generateRandomId;
             const res = await request(app)
                 .get(`/v1/coupon/${randomId}`)
-                .set('Authorization', `Bearer ${validUserToken}`);
+                .set('Authorization', `Bearer ${data.validUserToken}`);
 
             expect(res.statusCode).toEqual(404);
             expect(res.body).toHaveProperty('message', 'Coupon not found');
@@ -382,8 +350,8 @@ describe('___GET A COUPON___', () => {
         // 2.2) Coupon not valid for user (targeted but not matching user location)
         it('should return 404 when coupon is targeted but not valid for user', async () => {
             const res = await request(app)
-                .get(`/v1/coupon/${invalidUserTargetCoupon}`)
-                .set('Authorization', `Bearer ${validUserToken}`);
+                .get(`/v1/coupon/${data.invalidUserTargetCoupon}`)
+                .set('Authorization', `Bearer ${data.validUserToken}`);
 
             expect(res.statusCode).toEqual(404);
             expect(res.body).toHaveProperty('message', 'Coupon not found');
@@ -392,23 +360,23 @@ describe('___GET A COUPON___', () => {
         // 2.3) Coupon valid for user (targeted and matches user location)
         it('should return 200 and coupon details when coupon is valid for user', async () => {
             const res = await request(app)
-                .get(`/v1/coupon/${validUserTargetCoupon}`)
-                .set('Authorization', `Bearer ${validUserToken}`);
+                .get(`/v1/coupon/${data.validUserTargetCoupon}`)
+                .set('Authorization', `Bearer ${data.validUserToken}`);
 
             expect(res.statusCode).toEqual(200);
             expect(res.body).toHaveProperty('data');
-            expect(res.body.data._id).toEqual(validUserTargetCoupon);
+            expect(res.body.data._id).toEqual(data.validUserTargetCoupon);
         });
 
         // 2.4) Global coupon (valid for everyone)
         it('should return 200 and coupon details when coupon is global', async () => {
             const res = await request(app)
-                .get(`/v1/coupon/${globalCoupon}`)
-                .set('Authorization', `Bearer ${validUserToken}`);
+                .get(`/v1/coupon/${data.globalCoupon}`)
+                .set('Authorization', `Bearer ${data.validUserToken}`);
 
             expect(res.statusCode).toEqual(200);
             expect(res.body).toHaveProperty('data');
-            expect(res.body.data._id).toEqual(globalCoupon);
+            expect(res.body.data._id).toEqual(data.globalCoupon);
         });
     });
 
@@ -420,7 +388,7 @@ describe('___GET A COUPON___', () => {
             const randomId = generateRandomId;
             const res = await request(app)
                 .get(`/v1/coupon/${randomId}`)
-                .set('Authorization', `Bearer ${validVendorToken}`);
+                .set('Authorization', `Bearer ${data.validVendorToken}`);
 
             expect(res.statusCode).toEqual(404);
             expect(res.body).toHaveProperty('message', 'Coupon not found');
@@ -429,8 +397,8 @@ describe('___GET A COUPON___', () => {
         // 3.2) Coupon does not belong to vendor
         it('should return 404 when coupon does not belong to the vendor', async () => {
             const res = await request(app)
-                .get(`/v1/coupon/${inValidVendorCoupon}`)
-                .set('Authorization', `Bearer ${validVendorToken}`);
+                .get(`/v1/coupon/${data.inValidVendorCoupon}`)
+                .set('Authorization', `Bearer ${data.validVendorToken}`);
 
             expect(res.statusCode).toEqual(404);
             expect(res.body).toHaveProperty('message', 'Coupon not found');
@@ -439,12 +407,12 @@ describe('___GET A COUPON___', () => {
         // 3.3) Coupon belongs to vendor
         it('should return 200 and coupon details when coupon belongs to the vendor', async () => {
             const res = await request(app)
-                .get(`/v1/coupon/${validVendorCoupon}`)
-                .set('Authorization', `Bearer ${validVendorToken}`);
+                .get(`/v1/coupon/${data.validVendorCoupon}`)
+                .set('Authorization', `Bearer ${data.validVendorToken}`);
 
             expect(res.statusCode).toEqual(200);
             expect(res.body).toHaveProperty('data');
-            expect(res.body.data._id).toEqual(validVendorCoupon);
+            expect(res.body.data._id).toEqual(data.validVendorCoupon);
         });
     });
 
@@ -456,7 +424,7 @@ describe('___GET A COUPON___', () => {
             const randomId = generateRandomId;
             const res = await request(app)
                 .get(`/v1/coupon/${randomId}`)
-                .set('Authorization', `Bearer ${validMasterToken}`);
+                .set('Authorization', `Bearer ${data.validMasterToken}`);
 
             expect(res.statusCode).toEqual(404);
             expect(res.body).toHaveProperty('message', 'Coupon not found');
@@ -465,23 +433,23 @@ describe('___GET A COUPON___', () => {
         // 4.2) Global coupon (admin access)
         it('should return 200 and coupon details when admin searches for global coupon', async () => {
             const res = await request(app)
-                .get(`/v1/coupon/${globalCoupon}`)
-                .set('Authorization', `Bearer ${validMasterToken}`);
+                .get(`/v1/coupon/${data.globalCoupon}`)
+                .set('Authorization', `Bearer ${data.validMasterToken}`);
 
             expect(res.statusCode).toEqual(200);
             expect(res.body).toHaveProperty('data');
-            expect(res.body.data._id).toEqual(globalCoupon);
+            expect(res.body.data._id).toEqual(data.globalCoupon);
         });
 
         // 4.3) Targeted coupon (admin access)
         it('should return 200 and coupon details when admin searches for targeted coupon', async () => {
             const res = await request(app)
-                .get(`/v1/coupon/${validUserTargetCoupon}`)
-                .set('Authorization', `Bearer ${validMasterToken}`);
+                .get(`/v1/coupon/${data.validUserTargetCoupon}`)
+                .set('Authorization', `Bearer ${data.validMasterToken}`);
 
             expect(res.statusCode).toEqual(200);
             expect(res.body).toHaveProperty('data');
-            expect(res.body.data._id).toEqual(validUserTargetCoupon);
+            expect(res.body.data._id).toEqual(data.validUserTargetCoupon);
         });
     });
 
@@ -491,7 +459,7 @@ describe('___ Update a Coupon ____', () => {
     // 1) Unauthenticated user
     it('should return status 401 if the user is not authenticated', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${adminCouponId}`)
+            .patch(`/v1/coupon/${data.adminCouponId}`)
             .send({ discountValue: 10 });
 
         expect(response.status).toBe(401);
@@ -501,8 +469,8 @@ describe('___ Update a Coupon ____', () => {
     // 2) Not authorized user
     it('should return status 403 if the user is unauthorized to update the coupon', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${adminCouponId}`)
-            .set('Authorization', `Bearer ${validUserToken}`)
+            .patch(`/v1/coupon/${data.adminCouponId}`)
+            .set('Authorization', `Bearer ${data.validUserToken}`)
             .send({ discountValue: 10 });
 
         expect(response.status).toBe(403);
@@ -512,8 +480,8 @@ describe('___ Update a Coupon ____', () => {
     // 3) Vendor with owned coupon, trying to update discountValue and discountPercent together
     it('should return status 400 if vendor tries to update discountValue and discountPercent together', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`)
+            .patch(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`)
             .send({
                 discountValue: 10,
                 discountPercent: 20
@@ -526,8 +494,8 @@ describe('___ Update a Coupon ____', () => {
     // 4) Vendor with owned coupon, trying to update expireAt with past date
     it('should return status 400 if vendor tries to update coupon expireAt with a past date', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`)
+            .patch(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`)
             .send({
                 expireAt: '2020-01-01'
             });
@@ -539,8 +507,8 @@ describe('___ Update a Coupon ____', () => {
     // 5) Vendor with owned coupon, setting couponUsage to unlimited but providing count
     it('should return status 400 if vendor sets couponUsage to unlimited but provides a count', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`)
+            .patch(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`)
             .send({
                 couponUsage: {
                     type: 'unlimited',
@@ -555,9 +523,9 @@ describe('___ Update a Coupon ____', () => {
     // 6) Vendor updates with valid coupon data
     it('should update coupon successfully for the vendor', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`)
-            .send({ ...couponBody, code: "UpdatedCode" });
+            .patch(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`)
+            .send({ ...data.couponBody, code: "UpdatedCode" });
 
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
@@ -568,8 +536,8 @@ describe('___ Update a Coupon ____', () => {
     // 7) Vendor tries to update another vendor's coupon
     it('should return status 404 if vendor tries to update a coupon that does not belong to them', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${anotherVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`)
+            .patch(`/v1/coupon/${data.anotherVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`)
             .send({
                 discountValue: 15
             });
@@ -581,12 +549,12 @@ describe('___ Update a Coupon ____', () => {
     // 8) Admin tries to update vendor's coupon
     it('should return status 404 when admin tries to update a vendor’s coupon', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validMasterToken}`)
+            .patch(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`)
             .send({
                 discountValue: 25
             });
-        console.log(response.body);
+
         expect(response.status).toBe(404);
         expect(response.body.success).toBe(false);
         expect(response.body).toHaveProperty('error', 'Coupon not found');
@@ -596,8 +564,8 @@ describe('___ Update a Coupon ____', () => {
     // 9) Admin tries to update their own coupon
     it('should allow admin to update their own coupon', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${adminCouponId}`)
-            .set('Authorization', `Bearer ${validMasterToken}`)
+            .patch(`/v1/coupon/${data.adminCouponId}`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`)
             .send({
                 discountPercent: 10
             });
@@ -612,7 +580,7 @@ describe('___Delete A Coupon___', () => {
     // 1) Unauthenticated user
     it('should return status 401 if the user is not authenticated', async () => {
         const response = await request(app)
-            .delete(`/v1/coupon/${validVendorCoupon}`);
+            .delete(`/v1/coupon/${data.validVendorCoupon}`);
 
         expect(response.status).toBe(401);
         expect(response.body).toHaveProperty('message', 'Invalid Authorization Token !');
@@ -621,8 +589,8 @@ describe('___Delete A Coupon___', () => {
     // 2) Unauthorized user
     it('should return status 403 if the user is unauthorized to delete the coupon', async () => {
         const response = await request(app)
-            .delete(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validUserToken}`);
+            .delete(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(403);
         expect(response.body).toHaveProperty('message', 'Not allowed to perform this action !');
@@ -631,8 +599,8 @@ describe('___Delete A Coupon___', () => {
     // 3) Vendor tries to delete another vendor's coupon
     it('should return status 403 if a vendor tries to delete another vendor\'s coupon', async () => {
         const response = await request(app)
-            .delete(`/v1/coupon/${anotherVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`);
+            .delete(`/v1/coupon/${data.anotherVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`);
 
         expect(response.status).toBe(403);
         expect(response.body).toHaveProperty('message', 'You aren\'t authorized to access this coupon');
@@ -642,15 +610,15 @@ describe('___Delete A Coupon___', () => {
     it('should return status 204 when vendor tries to delete their own coupon and mark it as deleted', async () => {
         // Vendor deletes their own coupon
         const deleteResponse = await request(app)
-            .delete(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`);
+            .delete(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`);
 
         expect(deleteResponse.status).toBe(204);
 
         // Check if the coupon is marked as deleted by retrieving it
         const getResponse = await request(app)
-            .get(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`);
+            .get(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`);
 
         expect(getResponse.status).toBe(200);
         expect(getResponse.body.data.isDeleted).toBe(true);
@@ -659,8 +627,8 @@ describe('___Delete A Coupon___', () => {
     // 5) Admin tries to delete vendor's coupon
     it('should return status 204 when admin tries to delete a vendor’s coupon', async () => {
         const response = await request(app)
-            .delete(`/v1/coupon/${anotherVendorCoupon}`)
-            .set('Authorization', `Bearer ${validMasterToken}`);
+            .delete(`/v1/coupon/${data.anotherVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`);
 
         expect(response.status).toBe(204);
     });
@@ -668,8 +636,8 @@ describe('___Delete A Coupon___', () => {
     // 6) Admin tries to delete their own coupon
     it('should return status 204 when admin tries to delete their own coupon', async () => {
         const response = await request(app)
-            .delete(`/v1/coupon/${adminCouponId}`)
-            .set('Authorization', `Bearer ${validMasterToken}`);
+            .delete(`/v1/coupon/${data.adminCouponId}`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`);
 
         expect(response.status).toBe(204);
     });
@@ -679,7 +647,7 @@ describe('___Restore A Coupon___', () => {
     // 1) Unauthenticated user
     it('should return status 401 if the user is not authenticated', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${validVendorCoupon}/restore`);
+            .patch(`/v1/coupon/${data.validVendorCoupon}/restore`);
 
         expect(response.status).toBe(401);
         expect(response.body).toHaveProperty('message', 'Invalid Authorization Token !');
@@ -688,8 +656,8 @@ describe('___Restore A Coupon___', () => {
     // 2) Unauthorized user
     it('should return status 403 if the user is unauthorized to restore the coupon', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${validVendorCoupon}/restore`)
-            .set('Authorization', `Bearer ${validUserToken}`);
+            .patch(`/v1/coupon/${data.validVendorCoupon}/restore`)
+            .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(403);
         expect(response.body).toHaveProperty('message', 'Not allowed to perform this action !');
@@ -698,8 +666,8 @@ describe('___Restore A Coupon___', () => {
     // 3) Vendor tries to restore another vendor's coupon
     it('should return status 403 if a vendor tries to restore another vendor\'s coupon', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${anotherVendorCoupon}/restore`)
-            .set('Authorization', `Bearer ${validVendorToken}`);
+            .patch(`/v1/coupon/${data.anotherVendorCoupon}/restore`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`);
 
         expect(response.status).toBe(403);
         expect(response.body).toHaveProperty('message', 'You aren\'t authorized to access this coupon');
@@ -709,15 +677,15 @@ describe('___Restore A Coupon___', () => {
     it('should return status 200 when vendor tries to restore their own coupon and unmark it as deleted', async () => {
         // Vendor restores their own coupon
         const restoreResponse = await request(app)
-            .patch(`/v1/coupon/${validVendorCoupon}/restore`)
-            .set('Authorization', `Bearer ${validVendorToken}`);
+            .patch(`/v1/coupon/${data.validVendorCoupon}/restore`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`);
 
         expect(restoreResponse.status).toBe(200);
 
         // Check if the coupon is no longer marked as deleted by retrieving it
         const getResponse = await request(app)
-            .get(`/v1/coupon/${validVendorCoupon}`)
-            .set('Authorization', `Bearer ${validVendorToken}`);
+            .get(`/v1/coupon/${data.validVendorCoupon}`)
+            .set('Authorization', `Bearer ${data.validVendorToken}`);
 
         expect(getResponse.status).toBe(200);
         expect(getResponse.body.data.isDeleted).toBe(false);
@@ -726,8 +694,8 @@ describe('___Restore A Coupon___', () => {
     // 5) Admin tries to restore a vendor's coupon
     it('should return status 200 when admin tries to restore a vendor’s coupon', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${anotherVendorCoupon}/restore`)
-            .set('Authorization', `Bearer ${validMasterToken}`);
+            .patch(`/v1/coupon/${data.anotherVendorCoupon}/restore`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`);
 
         expect(response.status).toBe(200);
     });
@@ -735,21 +703,19 @@ describe('___Restore A Coupon___', () => {
     // 6) Admin tries to restore their own coupon
     it('should return status 200 when admin tries to restore their own coupon', async () => {
         const response = await request(app)
-            .patch(`/v1/coupon/${adminCouponId}/restore`)
-            .set('Authorization', `Bearer ${validMasterToken}`);
+            .patch(`/v1/coupon/${data.adminCouponId}/restore`)
+            .set('Authorization', `Bearer ${data.validMasterToken}`);
 
         expect(response.status).toBe(200);
     });
 });
 
 describe('___Claim A Coupon___', () => {
-    const randomCouponId = '66fedfe25a0f834d9fbe82fb'; // Use a valid random ID format for MongoDB
-
     // 1) Claim a coupon not exist (random ID)
     it('should return status 404 when trying to claim a non-existent coupon', async () => {
         const response = await request(app)
-            .post(`/v1/coupon/${randomCouponId}/claim`)
-            .set('Authorization', `Bearer ${validUserToken}`);
+            .post(`/v1/coupon/${data.randomCouponId}/claim`)
+            .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(404);
         expect(response.body).toHaveProperty('message', 'Coupon not found');
@@ -758,8 +724,8 @@ describe('___Claim A Coupon___', () => {
     // 2) Claim an expired coupon
     it('should return status 400 when trying to claim an expired coupon', async () => {
         const response = await request(app)
-            .post(`/v1/coupon/${expiredCouponId}/claim`)
-            .set('Authorization', `Bearer ${validUserToken}`);
+            .post(`/v1/coupon/${data.expiredCouponId}/claim`)
+            .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty('message', 'Coupon is expired');
@@ -768,8 +734,8 @@ describe('___Claim A Coupon___', () => {
     // 3) Claim a finished coupon (all uses have been used)
     it('should return status 400 when trying to claim a finished coupon', async () => {
         const response = await request(app)
-            .post(`/v1/coupon/${finishedCouponId}/claim`)
-            .set('Authorization', `Bearer ${validUserToken}`);
+            .post(`/v1/coupon/${data.finishedCouponId}/claim`)
+            .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty('message', 'Coupon has exceeded the usage limit');
@@ -778,8 +744,8 @@ describe('___Claim A Coupon___', () => {
     // 4) Claim a coupon where user has already reached their usage limit
     it('should return status 400 when user tries to claim a coupon after reaching the usage limit', async () => {
         const response = await request(app)
-            .post(`/v1/coupon/${usedCouponId}/claim`)
-            .set('Authorization', `Bearer ${validUserToken}`);
+            .post(`/v1/coupon/${data.usedCouponId}/claim`)
+            .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty('message', 'You have exceeded the user usage limit');
@@ -788,8 +754,8 @@ describe('___Claim A Coupon___', () => {
     // 5) Claim a valid coupon successfully
     it('should return status 200 when a user successfully claims a valid coupon', async () => {
         const response = await request(app)
-            .post(`/v1/coupon/${validCouponId}/claim`)
-            .set('Authorization', `Bearer ${validUserToken}`);
+            .post(`/v1/coupon/${data.validCouponId}/claim`)
+            .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty('message', 'Coupon is claimed');
@@ -798,8 +764,8 @@ describe('___Claim A Coupon___', () => {
     // 6) Claim a valid coupon again, but should return an error for claiming another coupon
     it('should return status 400 if the user tries to claim another coupon while already claiming one', async () => {
         const response = await request(app)
-            .post(`/v1/coupon/${validCouponId}/claim`)
-            .set('Authorization', `Bearer ${validUserToken}`);
+            .post(`/v1/coupon/${data.validCouponId}/claim`)
+            .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty('message', 'You are already claiming a coupon');

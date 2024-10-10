@@ -12,7 +12,7 @@ exports.signIn = asyncHandler(async (req, res) => {
 
     // check if the userName exists
     const isExist = await vendorRepo.findVendor(
-        { userName, isDeleted: false },
+        { userName },
         "-OTP -OTPExpiresAt -location -__v"
     );
 
@@ -310,7 +310,7 @@ exports.createAccount = asyncHandler(async (req, res) => {
     return res.status(201).json(createResponse(true, "Vendor account created successfully", 201, null, { name, userName, email }));
 });
 
-// Send email to admin with credentials
+// Send email to vendor with credentials
 const sendEmailWithCredentials = async (vendor) => {
     const emailOptions = {
         name: vendor.name,
@@ -359,10 +359,12 @@ exports.updateStatus = asyncHandler(async (req, res) => {
     return res.status(200).json(createResponse(true, "Vendor status updated successfully", 200));
 });
 
-// Delete/unDelete admin
+// Delete/unDelete vendor
 exports.delete = asyncHandler(async (req, res) => {
     const { vendorId } = req.params;
     const isDeleted = req.method === "DELETE" ? true : false;
+
+    //TODO: if to delete vendor, check if there are any products or orders related to this vendor.
 
     const result = await vendorRepo.updateVendor(
         { _id: vendorId },

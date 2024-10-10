@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const auth = require("../../middlewares/auth")
 const { validation } = require("../../middlewares/validation")
-const endpoints = require("../../endpoints/admin.endpoint")
+const endpoints = require("../../endpoints/admin.endpoints")
 const adminValidator = require("../../validation/admin.validation");
 const adminController = require("../../controllers/admin.controller");
 
@@ -21,5 +21,6 @@ router.get('/', auth(endpoints.GET_ADMINS), adminController.getAllAdminsControll
 router.patch('/:adminId/role', validation(adminValidator.updateAdminRoleValidation), auth(endpoints.UPDATE_ROLE), adminController.updateAdminRoleController);
 router.delete('/:adminId', validation(adminValidator.deleteAdminValidation), auth(endpoints.DELETE_ADMIN), adminController.deleteAdminController);
 router.patch('/:adminId/restore', validation(adminValidator.deleteAdminValidation), auth(endpoints.DELETE_ADMIN), adminController.deleteAdminController);
+router.get('/:adminId', validation(adminValidator.getById), auth(endpoints.GET_ADMIN), adminController.getById);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const dev = require('../dev/user/user.dev');
+// const dev = require('../dev/user/user.dev');
 
 beforeAll(async () => {
   await mongoose.connect(process.env.MONGO_URL);

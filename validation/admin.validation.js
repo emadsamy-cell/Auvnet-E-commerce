@@ -162,3 +162,14 @@ exports.deleteAdminValidation = {
     }),
 };
 
+exports.getById = {
+  params: joi.object({
+    adminId: joi.string().length(24).required().messages({
+      'string.length': 'admin ID must be exactly 24 characters long.',
+      'string.base': 'admin ID must be a string.',
+      'string.empty': 'admin ID can not be empty.',
+      'any.required': 'admin ID is required.',
+    }),
+  })
+}
+

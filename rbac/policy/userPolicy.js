@@ -9,11 +9,20 @@ const {
     GET_CATEGORY,
 } = require('../../endpoints/category.endpoints');
 
+// Coupon Endpoints Policy
 const {
     GET_COUPONS,
     GET_COUPON,
     CLAIM_COUPON
-} = require("../../endpoints/coupon.endpoint")
+} = require("../../endpoints/coupon.endpoints")
+
+// Voucher Endpoints Policy
+const {
+    GET_VOUCHERS,
+    GET_VOUCHER,
+    CLAIM_VOUCHER,
+    REDEEM_VOUCHER
+  } = require("../../endpoints/voucher.endpoints")
 
 module.exports = [
     GET_USER,
@@ -22,5 +31,10 @@ module.exports = [
     GET_COUPON,
     CLAIM_COUPON,
 
-    GET_CATEGORY
+    GET_CATEGORY,
+
+    GET_VOUCHERS,
+    GET_VOUCHER,
+    CLAIM_VOUCHER,
+    REDEEM_VOUCHER
 ];

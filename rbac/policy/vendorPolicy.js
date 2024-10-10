@@ -10,7 +10,7 @@ const {
     GET_COUPON,
     UPDATE_COUPON,
     DELETE_COUPON
-} = require("../../endpoints/coupon.endpoint")
+} = require("../../endpoints/coupon.endpoints")
 
 // Category Endpoints Policy
 const {
