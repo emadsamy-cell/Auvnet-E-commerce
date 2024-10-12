@@ -9,11 +9,20 @@ const {
     GET_CATEGORY,
 } = require('../../endpoints/category.endpoints');
 
+// Coupon Endpoints Policy
 const {
     GET_COUPONS,
     GET_COUPON,
     CLAIM_COUPON
-} = require("../../endpoints/coupon.endpoint")
+} = require("../../endpoints/coupon.endpoints")
+
+// Voucher Endpoints Policy
+const {
+    GET_VOUCHERS,
+    GET_VOUCHER,
+    CLAIM_VOUCHER,
+    REDEEM_VOUCHER
+  } = require("../../endpoints/voucher.endpoints")
 
 const {
     GET_COLLECTION,
@@ -22,6 +31,7 @@ const {
 } = require('../../endpoints/collection.endpoints');
 
 const {
+    GET_VENDORS,
     LIKE_VENDOR,
     DISLIKE_VENDOR
 } = require('../../endpoints/vendor.endpoints');
@@ -36,10 +46,16 @@ module.exports = [
 
     GET_CATEGORY,
 
+    GET_VOUCHERS,
+    GET_VOUCHER,
+    CLAIM_VOUCHER,
+    REDEEM_VOUCHER,
+
     GET_COLLECTION,
     LIKE_COLLECTION,
     DISLIKE_COLLECTION,
 
+    GET_VENDORS,
     LIKE_VENDOR,
     DISLIKE_VENDOR
 ];

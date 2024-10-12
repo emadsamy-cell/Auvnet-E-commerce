@@ -1,12 +1,12 @@
 const app = require("../../app");
-const { validAdminToken, existedAdminEmail, existedAdminUserName, validAdminProfileData, invalidAdminToken, validMasterToken } = require("../Data")
+const data = require("../Data");
 const supertest = require("supertest");
 
 describe("___Get Profile For Admin___", () => {
   it("should return status 401 when admin isn't authenticated", async () => {
     const response = await supertest(app)
       .get("/v1/admin/profile")
-      .set("Authorization", `Bearer ${invalidAdminToken}`);
+      .set("Authorization", `Bearer ${data.invalidAdminToken}`);
 
     expect(response.status).toBe(401);
     expect(response.body.success).toBe(false);
@@ -15,7 +15,7 @@ describe("___Get Profile For Admin___", () => {
   it("should return status 200 when admin fetches his profile", async () => {
     const response = await supertest(app)
       .get("/v1/admin/profile")
-      .set("Authorization", `Bearer ${validAdminToken}`);
+      .set("Authorization", `Bearer ${data.validAdminToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
@@ -27,8 +27,8 @@ describe("___Update Profile For Admin___", () => {
   it("should return status 401 when admin isn't authenticated", async () => {
     const response = await supertest(app)
       .patch("/v1/admin/profile")
-      .set("Authorization", `Bearer ${invalidAdminToken}`)
-      .send(validAdminProfileData);
+      .set("Authorization", `Bearer ${data.invalidAdminToken}`)
+      .send(data.validAdminProfileData);
     expect(response.status).toBe(401);
     expect(response.body.success).toBe(false);
   });
@@ -36,8 +36,8 @@ describe("___Update Profile For Admin___", () => {
   it("should return status 409 when admin updates userName with existed one", async () => {
     const response = await supertest(app)
       .patch("/v1/admin/profile")
-      .set("Authorization", `Bearer ${validAdminToken}`)
-      .send(Object.assign(validAdminProfileData, { userName: existedAdminUserName }));
+      .set("Authorization", `Bearer ${data.validAdminToken}`)
+      .send(Object.assign(data.validAdminProfileData, { userName: data.existedAdminUserName }));
 
     expect(response.status).toBe(409);
     expect(response.body.success).toBe(false);
@@ -46,8 +46,8 @@ describe("___Update Profile For Admin___", () => {
   it("should return status 409 when admin updates email with existed one", async () => {
     const response = await supertest(app)
       .patch("/v1/admin/profile")
-      .set("Authorization", `Bearer ${validAdminToken}`)
-      .send(Object.assign(validAdminProfileData, { email: existedAdminEmail }));
+      .set("Authorization", `Bearer ${data.validAdminToken}`)
+      .send(Object.assign(data.validAdminProfileData, { email: data.existedAdminEmail }));
 
     expect(response.status).toBe(409);
     expect(response.body.success).toBe(false);
@@ -56,13 +56,13 @@ describe("___Update Profile For Admin___", () => {
   it("should return status 200 when admin updates his profile", async () => {
     const response = await supertest(app)
       .patch("/v1/admin/profile")
-      .set("Authorization", `Bearer ${validAdminToken}`)
-      .send(validAdminProfileData);
+      .set("Authorization", `Bearer ${data.validAdminToken}`)
+      .send(data.validAdminProfileData);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
     expect(response.body.message).toBe("Profile updated successfully");
-    expect(response.body.data).toEqual(Object.assign(validAdminProfileData, { _id: response.body.data._id }));
+    expect(response.body.data).toEqual(Object.assign(data.validAdminProfileData, { _id: response.body.data._id }));
   });
 });
 
@@ -76,21 +76,11 @@ describe("___Update Password For Admin___", () => {
     expect(response.body.success).toBe(false);
   });
 
-  it("should return status 401 when admin isn't authenticated", async () => {
-    const response = await supertest(app)
-      .patch("/v1/admin/profile/password")
-      .set("Authorization", `Bearer ${invalidAdminToken}`)
-      .send({ currentPassword: "admin", newPassword: "Admin@123" });
-
-    expect(response.status).toBe(401);
-    expect(response.body.success).toBe(false);
-  });
-
   it("should return status 401 when admin enters wrong currentPassword", async () => {
     const response = await supertest(app)
       .patch("/v1/admin/profile/password")
-      .set("Authorization", `Bearer ${validMasterToken}`)
-      .send({ currentPassword: "admin", newPassword: "Admin@123" });
+      .set("Authorization", `Bearer ${data.validMasterToken}`)
+      .send({ currentPassword: data.newPassword, newPassword: data.newPassword });
 
     expect(response.status).toBe(401);
     expect(response.body.success).toBe(false);
@@ -99,17 +89,22 @@ describe("___Update Password For Admin___", () => {
   it("should return status 200 when admin enters correct currentPassword and updates with corrected format password", async () => {
     const response = await supertest(app)
       .patch("/v1/admin/profile/password")
-      .set("Authorization", `Bearer ${validMasterToken}`)
-      .send({ currentPassword: "Admin@1234", newPassword: "Admin@1233" });
+      .set("Authorization", `Bearer ${data.validMasterToken}`)
+      .send({ currentPassword: data.oldPassword, newPassword: data.newPassword });
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
     expect(response.body.message).toBe("Password has been changed successfully");
     const loginResponse = await supertest(app)
       .post("/v1/admin/auth/signIn")
-      .send({ userName: "admin", password: "Admin@123" });
+      .send({ userName: "admin", password: data.newPassword });
 
     expect(loginResponse.status).toBe(200);
+
+    await supertest(app)
+      .patch("/v1/admin/profile/password")
+      .set("Authorization", `Bearer ${data.validMasterToken}`)
+      .send({ currentPassword: data.newPassword, newPassword: data.oldPassword });
   });
 });
 

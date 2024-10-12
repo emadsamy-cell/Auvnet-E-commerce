@@ -2,7 +2,7 @@ const router = require("express").Router();
 const auth = require("../../middlewares/auth");
 const { validation } = require("../../middlewares/validation")
 const couponValidation = require("../../validation/coupon.validation");
-const endpoints = require("../../endpoints/coupon.endpoint");
+const endpoints = require("../../endpoints/coupon.endpoints");
 const couponController = require("../../controllers/coupon.controller");
 
 router.post('/', validation(couponValidation.createCoupon), auth(endpoints.CREATE_COUPON), couponController.create)

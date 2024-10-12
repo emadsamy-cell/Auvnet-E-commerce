@@ -3,7 +3,9 @@ const app = require("../../app");
 const data = require('./vendor.data');
 const userData = require('../User/user.temp.data');
 const { generateOTP } = require("../../helpers/otpManager");
-const path = require('path')
+const path = require('path');
+
+const invalidVendorId = "66fc4c578db032187d5158d2";
 
 jest.mock("../../helpers/otpManager", () => ({
     generateOTP: jest.fn(),
@@ -463,3 +465,169 @@ describe("___Change Password___", () => {
         expect(response.body.message).toBe("Password has been changed successfully");
     });
 });
+
+// ________________________________________________Vendor Management Testing_______________________________________________
+describe("___Create Vendor Account___", () => {
+    it("should return status 400 when admin creates vendor account with invalid email address", async () => {
+        const body = { ...data.validNewAccountData, email: "aaa.com" };
+        const response = await supertest(app).post("/v1/vendor")
+            .set("Authorization", `Bearer ${data.validAdminToken}`)
+            .send(body);
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("validation error");
+        expect(response.body.error[0].message).toBe("Please enter a valid email address");
+    });
+
+    it("should return status 409 when admin creates vendor account with exist userName", async () => {
+        const body = { ...data.validNewAccountData, userName: data.existUsername };
+        const response = await supertest(app).post("/v1/vendor")
+            .set("Authorization", `Bearer ${data.validAdminToken}`)
+            .send(body);
+
+        expect(response.status).toBe(409);
+        expect(response.body.message).toBe("userName already exists. Please choose a different one.");
+    });
+
+    it("should return status 409 when admin creates vendor account with exist email", async () => {
+        const body = { ...data.validNewAccountData, email: data.existEmail };
+
+        const response = await supertest(app).post("/v1/vendor")
+            .set("Authorization", `Bearer ${data.validAdminToken}`)
+            .send(body);
+
+        expect(response.status).toBe(409);
+        expect(response.body.message).toBe("email already exists. Please choose a different one.");
+    });
+
+    it("should return status 201 when admin creates vendor account with valid data", async () => {
+        const response = await supertest(app).post("/v1/vendor")
+            .set("Authorization", `Bearer ${data.validAdminToken}`)
+            .send(data.validNewAccountData);
+
+        expect(response.status).toBe(201);
+        expect(response.body.message).toBe("Vendor account created successfully");
+    });
+});
+
+describe("___Get Vendors___", () => {
+    it("should return status 401 when unauthenticated user tries to access vendor endpoint", async () => {
+        const response = await supertest(app).get("/v1/vendor")
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 200 when admin tries to access vendors endpoint", async () => {
+        const response = await supertest(app).get("/v1/vendor")
+            .set("Authorization", `Bearer ${data.validAdminToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Vendors fetched successfully");
+    });
+
+    it("should return status 200 when superAdmin tries to access vendors endpoint", async () => {
+        const response = await supertest(app).get("/v1/vendor")
+            .set("Authorization", `Bearer ${data.validMasterToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Vendors fetched successfully");
+    });
+
+});
+
+describe("___Update Vendor Status___", () => {
+    it("should return status 401 when unauthenticated user tries to update vendor status", async () => {
+        const response = await supertest(app).patch(`/v1/vendor/${data.vendorId}/status`)
+            .send({ status: "inactive" });
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 400 when admin tries to update vendor status with invalid format status", async () => {
+        const response = await supertest(app).patch(`/v1/vendor/${data.vendorId}/status`)
+            .set("Authorization", `Bearer ${data.validAdminToken}`)
+            .send({ status: "inACtive" });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("validation error");
+        expect(response.body.error[0].message).toBe("Status should be either active or inactive");
+    });
+
+    it("should return status 404 when admin tries to update vendor status for vendor who doesn't exist", async () => {
+        const response = await supertest(app).patch(`/v1/vendor/${invalidVendorId}/status`)
+            .set("Authorization", `Bearer ${data.validAdminToken}`)
+            .send({ status: "inactive" });
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Vendor not found");
+    });
+
+    it("should return status 200 when admin tries to update vendor status with valid format status", async () => {
+        const response = await supertest(app).patch(`/v1/vendor/${data.vendorId}/status`)
+            .set("Authorization", `Bearer ${data.validAdminToken}`)
+            .send({ status: "inactive" });
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Vendor status updated successfully");
+    });
+
+    it("should return status 200 when admin tries to update vendor status with valid format status", async () => {
+        const response = await supertest(app).patch(`/v1/vendor/${data.vendorId}/status`)
+            .set("Authorization", `Bearer ${data.validAdminToken}`)
+            .send({ status: "active" });
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Vendor status updated successfully");
+    });
+});
+
+describe("___Delete Vendor___", () => {
+    it("should return status 401 when unauthenticated user tries to delete vendor", async () => {
+        const response = await supertest(app).delete(`/v1/vendor/${data.vendorId}`);
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 404 when admin deletes a vendor who doesn't exist", async () => {
+        const response = await supertest(app).delete(`/v1/vendor/${invalidVendorId}`)
+            .set("Authorization", `Bearer ${data.validAdminToken}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Vendor not found");
+    });
+
+    it("should return status 204 when admin deletes a vendor who exists", async () => {
+        const response = await supertest(app).delete(`/v1/vendor/${data.vendorId}`)
+            .set("Authorization", `Bearer ${data.validAdminToken}`);
+
+        expect(response.status).toBe(204);
+    });
+})
+
+describe("___Restore Vendor___", () => {
+    it("should return status 401 when unauthenticated user tries to restore vendor", async () => {
+        const response = await supertest(app).patch(`/v1/vendor/${data.vendorId}/restore`);
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 404 when admin restores a vendor who doesn't exist", async () => {
+        const response = await supertest(app).patch(`/v1/vendor/${invalidVendorId}/restore`)
+            .set("Authorization", `Bearer ${data.validAdminToken}`);
+        console.log(response.body)
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Vendor not found");
+    });
+
+    it("should return status 200 when admin restores a vendor who exists", async () => {
+        const response = await supertest(app).patch(`/v1/vendor/${data.vendorId}/restore`)
+            .set("Authorization", `Bearer ${data.validAdminToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Vendor is restored successfully");
+    });
+})

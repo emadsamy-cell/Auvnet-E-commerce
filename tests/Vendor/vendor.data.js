@@ -16,9 +16,18 @@ const inValidConfirmPassword = "123456";
 const validOTP = "123456";
 const invalidOTP = "1";
 const inCorrectOTP = "12345";
+const newAccountUsername = "newVendor";
+const newAccountPassword = "Vendor@123";
+const newAccountEmail = "a.essam192000@gmail.com";
+const newAccountName = "Ahmed Essam";
 
 exports.accessToken;
-exports.inValidToken = "Invalid_Token"
+exports.inValidToken = "Invalid_Token";
+exports.validMasterToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NmY5NGU3NDg1OGMzNmM4NzlkMTZmMmIiLCJ1c2VyTmFtZSI6ImFkbWluIiwicm9sZSI6InN1cGVyQWRtaW4iLCJtYXN0ZXIiOnRydWUsImlhdCI6MTcyODI0NTc3MywiZXhwIjoxNzI4Mjc0NTczfQ.V15Dm_dd5qX3BnlwnVdE5HsnqkGYfCj5hGZNfffNp-Y";
+exports.validAdminToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NmY5NGY2NjE2ZmQwMjI5YzQxZWQ3ZDMiLCJ1c2VyTmFtZSI6ImFkbWluMyIsInJvbGUiOiJzdXBlckFkbWluIiwibWFzdGVyIjpmYWxzZSwiaWF0IjoxNzI4Mjk2Mjk3LCJleHAiOjE3MjgzMjUwOTd9.EVvO_WsYIt4Slkk4_o89yVj5NuDtYebeSDhTa4QRw64";
+exports.existUsername = "vendor";
+exports.existEmail = "vendor@gmail.com";
+exports.vendorId = "6703cf5d5ad8ede415368389"
 
 // ____________________________________Sign In____________________________________
 exports.validSignIn = {
@@ -200,4 +209,12 @@ exports.deletedAccountResetPassword = {
     email: deletedAccountEmailAddress,
     password: validPassword,
     confirmPassword: validConfirmPassword
+}
+
+// ____________________________________Create Account____________________________________
+exports.validNewAccountData = {
+    name: newAccountName,
+    userName: newAccountUsername,
+    email: newAccountEmail,
+    password: newAccountPassword,
 }

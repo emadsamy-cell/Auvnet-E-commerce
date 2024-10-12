@@ -171,7 +171,7 @@ exports.confirmResetPassword = `<!DOCTYPE html>
 </html>
 `
 
-exports.adminCredentials = (userName, password, phoneNumber) => `<!DOCTYPE html>
+exports.accountCredentials = (emailOptions) => `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -213,13 +213,13 @@ exports.adminCredentials = (userName, password, phoneNumber) => `<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <h2>Welcome to ${process.env.COMPANY_NAME}, Admin!</h2>
-        <p>Hi <strong>${userName}</strong>,</p>
+        <h2>Welcome to ${process.env.COMPANY_NAME}, ${emailOptions.role}!</h2>
+        <p>Hi <strong>${emailOptions.name ? emailOptions.name : emailOptions.userName}</strong>,</p>
         <p>Your account has been successfully created, and here are your credentials:</p>
         <p class="credentials">
-            Username: ${userName}<br>
-            Password: ${password}<br>
-            Phone Number: ${phoneNumber}
+            Username: ${emailOptions.userName}<br>
+            Password: ${emailOptions.password}<br>
+            ${emailOptions.phoneNumber ? `Phone Number: ${emailOptions.phoneNumber}` : ''}
         </p>
         <p>We recommend changing your password after your first login for security reasons.</p>
         <p>Thank you,<br>The <strong>${process.env.COMPANY_NAME}</strong> Team</p>

@@ -1,11 +1,11 @@
-const { createResponse } = require("../utils/createResponse")
-const couponRepo = require("../models/coupon/coupon.repo");
-const userRepo = require("../models/user/user.repo");
-const { asyncHandler } = require("../utils/asyncHandler");
-const { paginate } = require("../utils/pagination");
-const couponEnum = require("../enums/coupon");
 const roles = require("../enums/roles");
-const categoryRepo = require("../models/category/category.repo");
+const couponEnum = require("../enums/coupon");
+const { paginate } = require("../utils/pagination");
+const { asyncHandler } = require("../utils/asyncHandler");
+const { createResponse } = require("../utils/createResponse")
+
+const userRepo = require("../models/user/user.repo");
+const couponRepo = require("../models/coupon/coupon.repo");
 
 const couponHelpers = require("../helpers/coupon")
 
@@ -19,35 +19,28 @@ exports.create = asyncHandler(async (req, res) => {
         req.body.couponType = couponEnum.couponType.GLOBAL
     }
 
-    // If the sender is vendor
-    if (userRole === roles.VENDOR) {
-        //TODO: check that products assigned belongs to the vendor
-        if (req.products) {
-            //from products collection, search for productId with vendorId for each product in array.
-            //if not found, return error
+    if(req.body.products){
+        //Remove duplicate products
+        req.body.products = [...new Set(req.body.products)]
+       
+        const result = await couponHelpers.checkProductsOwnership(req);
+        if (!result) {
+            return res.status(400).json(createResponse(false, "One or more products are not found", 400))
         }
-        req.body.vendor = req.user._id;
-    }
-    // If the sender is admin
-    else {
-        //TODO: check that products are exist
-        if (req.products) {
-            //from products collection, search for productId in products collection for each product in array.
-            //if not found, return error
-        }
-        req.body.admin = req.user._id;
     }
 
-    //TODO: check that the categories assigned are exist
+    //Check that the categories assigned are exist
     if (req.body.categories) {
-        //from categories collection, search for categoryId in categories collection for each category in array.
-        const result = await categoryRepo.getList({ _id: { $in: req.categories }, isDeleted: false }, "_id");
+        //Remove duplicate products
+        req.body.products = [...new Set(req.body.products)];
 
-        if (result.data.categories.length !== req.body.categories.length) {
+        const result = await couponHelpers.checkCategoriesExistence(req);
+        if (!result) {
             return res.status(400).json(createResponse(false, "One or more categories are not found", 400))
         }
-    }
+    }    
 
+    userRole === roles.VENDOR ? req.body.vendor = req.user._id : req.body.admin = req.user._id;
     const result = await couponRepo.create(req.body);
     return res.status(result.statusCode).json(createResponse(result.success, result.message, result.statusCode, result.error, result.data))
 });
@@ -82,12 +75,12 @@ exports.getById = asyncHandler(async (req, res) => {
     //filterBuilder function is used to build the filter based on the user role
     const filter = await couponHelpers.filterBuilder(req);
 
-    const select = req.user.role === roles.USER ? "-used -vendor -couponUsage -couponType -isDeleted" : "";
+    const select = req.user.role === roles.USER ? "-used -vendor -admin -couponUsage -couponType -isDeleted -__v -updatedAt -createdAt" : "";
     const populate = [
         { "path": "vendor", "select": "userName email primaryPhone" },
         { "path": "admin", "select": "userName email phoneNumber" },
-        // { "path": "products", "select": "name" },
-        // { "path": "categories", "select": "name" }
+        { "path": "products", "select": "name" },
+        { "path": "categories", "select": "name" }
     ]
 
     //Check if the coupon is exist
@@ -104,11 +97,7 @@ exports.update = asyncHandler(async (req, res) => {
         req.body.couponType = couponEnum.couponType.TARGET
     }
 
-    if (req.body.discountPercent) {
-        req.body.discountValue = null
-    } else if (req.body.discountValue) {
-        req.body.discountPercent = null
-    }
+    req.body.discountPercent? req.body.discountValue = null : req.body.discountPercent = null;
 
     if (req.body.couponUsage?.type === couponEnum.usageLimit.UNLIMITED) {
         req.body.couponUsage.count = null
@@ -118,15 +107,25 @@ exports.update = asyncHandler(async (req, res) => {
         req.body.userUsage.count = null
     }
 
-    if (req.body.products) {
-        //TODO: check that products are exist
-        //TODO: check that products assigned belongs to the vendor if the sender is vendor
+    if(req.body.products){
+        //Remove duplicate products
+        req.body.products = [...new Set(req.body.products)]
+       
+        const result = await couponHelpers.checkProductsOwnership(req);
+        if (!result) {
+            return res.status(400).json(createResponse(false, "One or more products are not found", 400))
+        }
     }
 
     if (req.body.categories) {
-        //TODO: check that categories are exist
-        //TODO: check that categories assigned belongs to the vendor if the sender is vendor
-    }
+        //Remove duplicate products
+        req.body.products = [...new Set(req.body.products)]
+
+        const result = await couponHelpers.checkCategoriesExistence(req);
+        if (!result) {
+            return res.status(400).json(createResponse(false, "One or more categories are not found", 400))
+        }
+    }    
 
     const filter = req.user.role === roles.VENDOR ?
         { _id: req.params.id, vendor: req.user._id } :

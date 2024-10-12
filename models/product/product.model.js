@@ -14,9 +14,9 @@ const productSchema = mongoose.Schema({
         ref: 'Category',
         required: true
     },
-    vendor: {
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'vendor',
+        ref: 'Vendor',
         required: true
     },
     Images: [{

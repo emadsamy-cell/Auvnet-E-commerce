@@ -47,7 +47,7 @@ exports.selectHandler = (options) => {
         productSelect += " isDeleted";
         categorySelect += " isDeleted";
         collectionSelect += " visibility isDeleted";
-        vendorSelect += " status isDeleted";
+        vendorSelect += " status isDeleted createdBy";
     }
 
     return { collectionSelect, productSelect, vendorSelect, categorySelect };

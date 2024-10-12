@@ -2,8 +2,11 @@ const userRepo = require("../models/user/user.repo");
 const roles = require("../enums/roles");
 const couponEnum = require("../enums/coupon");
 
+const productRepo = require("../models/product/product.repo");
+const categoryRepo = require("../models/category/category.repo");
+
 exports.getCouponsForUser = async (req) => {
-    const select = "couponType code discountType discountValue discountPercent status expireAt"
+    const select = "couponType code discountType expireAt status"
 
     // Use the filterBuilder to construct the coupon filter for the user
     const couponFilter = await this.filterBuilder(req);
@@ -12,7 +15,7 @@ exports.getCouponsForUser = async (req) => {
 }
 
 exports.getCouponsForVendor = async (req) => {
-    const select = "code discountType discountValue discountPercent status expireAt usedBy totalUsed isDeleted"
+    const select = "code couponType discountType status expireAt isDeleted"
 
     // Use the filterBuilder to construct the coupon filter for the vendor
     const couponFilter = await this.filterBuilder(req);
@@ -21,7 +24,7 @@ exports.getCouponsForVendor = async (req) => {
 }
 
 exports.getCouponsForAdmin = async (req) => {
-    const select = "code discountType discountValue discountPercent status expireAt usedBy totalUsed isDeleted"
+    const select = "code couponType discountType status expireAt isDeleted"
 
     // Use the filterBuilder to construct the coupon filter for the admin
     const couponFilter = await this.filterBuilder(req);
@@ -60,4 +63,15 @@ exports.filterBuilder = async (req) => {
             break;
     }
     return filter;
+}
+
+exports.checkProductsOwnership = async (req) => {
+    const filter = req.user.role === roles.VENDOR ? { _id: { $in: req.body.products }, createdBy: req.user._id, isDeleted: false } : { _id: { $in: req.body.products }, isDeleted: false };
+    const products = await productRepo.getList(filter, "_id");
+    return products.data.products.length === req.body.products.length;
+}
+
+exports.checkCategoriesExistence = async (req) => {
+    const categories = await categoryRepo.getList({ _id: { $in: req.body.categories }, isDeleted: false }, "_id");
+    return categories.data.categories.length === req.body.categories.length;
 }

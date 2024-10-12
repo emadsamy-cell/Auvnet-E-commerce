@@ -3,9 +3,10 @@ const { audienceLocation, discountType, status, usageLimit } = require("../enums
 
 exports.createCoupon = {
     body: joi.object({
-        code: joi.string().trim().required().messages({
+        code: joi.string().trim().alphanum().required().messages({
             'string.empty': "Coupon code can't be empty.",
             'any.required': 'Coupon code is required.',
+            'string.alphanum': 'Coupon code must be alphanumeric.',
         }),
 
         discountType: joi.string().valid(discountType.PURCHASE, discountType.SHIPMENT).required().messages({
@@ -29,7 +30,7 @@ exports.createCoupon = {
             .optional()
             .messages({
                 'date.greater': 'Expiration date must be in the future.',
-                'date.base': 'Expiration date must be a valid date.',
+                'date.base': 'Expiration date must be a valid date (YYYY-MM-DD).',
             }),
 
         couponUsage: joi.object({
@@ -82,12 +83,12 @@ exports.createCoupon = {
                 'number.base': 'Maximum discount limit must be a number.',
             }),
             audienceLocation: joi.object({
-                type: joi.string().valid(audienceLocation.REGION, audienceLocation.COUNTRY, audienceLocation.CITY).required().messages({
+                type: joi.string().required().valid(audienceLocation.REGION, audienceLocation.COUNTRY, audienceLocation.CITY).messages({
                     'any.only': `Audience location type must be ${audienceLocation.REGION}, ${audienceLocation.COUNTRY}, or ${audienceLocation.CITY}.`,
-                    'any.required': 'Audience location type is required.',
+                    'any.required': 'Type is required when audienceLocation is provided.',
                 }),
                 location: joi.string().required().messages({
-                    'any.required': 'Location is required when location type is provided.',
+                    'any.required': 'Location is required when audienceLocation is provided.',
                     'string.empty': 'Location can not be empty.',
                     'string.base': 'Location must be a string.',
                 })
@@ -180,8 +181,9 @@ exports.getCoupon = {
 
 exports.updateCoupon = {
     body: joi.object({
-        code: joi.string().trim().messages({
+        code: joi.string().trim().alphanum().messages({
             'string.empty': "Coupon code can't be empty.",
+            'string.alphanum': 'Coupon code must be alphanumeric.',
         }),
         status: joi.string().valid(status.ACTIVE, status.EXPIRED).messages({
             'any.only': `Status must be either ${status.ACTIVE} or ${status.INACTIVE}.`,
@@ -207,7 +209,7 @@ exports.updateCoupon = {
             .optional()
             .messages({
                 'date.greater': 'Expiration date must be in the future.',
-                'date.base': 'Expiration date must be a valid date.',
+                'date.base': 'Expiration date must be a valid date (YYYY-MM-DD).',
             }),
 
         couponUsage: joi.object({
@@ -258,10 +260,10 @@ exports.updateCoupon = {
             audienceLocation: joi.object({
                 type: joi.string().required().valid(audienceLocation.REGION, audienceLocation.COUNTRY, audienceLocation.CITY).messages({
                     'any.only': `Audience location type must be ${audienceLocation.REGION}, ${audienceLocation.COUNTRY}, or ${audienceLocation.CITY}.`,
-                    'any.required': 'Audience location type is required.',
+                    'any.required': 'Type is required when audienceLocation is provided.',
                 }),
                 location: joi.string().required().messages({
-                    'any.required': 'Location is required when location type is provided.',
+                    'any.required': 'Location is required when audienceLocation is provided.',
                     'string.empty': 'Location can not be empty.',
                     'string.base': 'Location must be a string.',
                 })

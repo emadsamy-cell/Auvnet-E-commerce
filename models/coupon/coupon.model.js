@@ -7,7 +7,6 @@ const couponSchema = mongoose.Schema({
         unique: true,
         required: true,
         trim: true,
-        index: true
     },
     couponType: {
         type: String,
@@ -93,7 +92,7 @@ const couponSchema = mongoose.Schema({
     termsAndConditions: {
         minPurchaseValue: {
             type: Number,
-            default: 0
+            min: 0
         },
         maxDiscountLimit: {
             type: Number,

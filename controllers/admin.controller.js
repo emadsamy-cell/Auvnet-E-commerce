@@ -201,7 +201,7 @@ exports.createAdminAccountController = asyncHandler(async (req, res) => {
   }
 
   // Send email to admin with credentials
-  const emailSent = await sendEmailToAdminController({ userName, email, password, phoneNumber, });
+  const emailSent = await sendEmailToAdminController({ userName, email, password, phoneNumber });
   if (!emailSent.success) {
     return res.status(emailSent.status).json(createResponse(emailSent.success, emailSent.message, emailSent.statusCode, emailSent.error));
   }
@@ -210,16 +210,17 @@ exports.createAdminAccountController = asyncHandler(async (req, res) => {
 });
 
 // Send email to admin with credentials
-exports.sendEmailToAdminController = async (admin) => {
+const sendEmailToAdminController = async (admin) => {
   const emailOptions = {
     email: admin.email,
     subject: "Admin Account Credentials",
     userName: admin.userName,
     password: admin.password,
     phoneNumber: admin.phoneNumber,
+    role: "Admin"
   };
 
-  const emailSent = await mailManager.emailSetup("adminCredentials", emailOptions);
+  const emailSent = await mailManager.emailSetup("accountCredentials", emailOptions);
   return emailSent;
 };
 
@@ -280,4 +281,19 @@ exports.deleteAdminController = asyncHandler(async (req, res) => {
     :
     res.status(200).json(createResponse(deletedAdmin.success, "Admin is restored successfully", 200))
 })
+
+// Get admin by ID
+exports.getById = asyncHandler(async (req, res) => {
+  const adminId = req.params.adminId;
+
+  // Check if admin exists with the given id
+  const adminProfile = await adminRepo.isExist(
+    { _id: adminId },
+    "userName email phoneNumber"
+  );
+  if(!adminProfile.success) {
+    return res.status(adminProfile.statusCode).json(createResponse(adminProfile.success, adminProfile.message, adminProfile.statusCode));
+  }
+  return res.status(200).json(createResponse(true, "Admin profile fetched successfully", 200, null, adminProfile.data));
+});
 

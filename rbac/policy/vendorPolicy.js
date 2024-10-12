@@ -1,7 +1,7 @@
 // Vendor Endpoints Policy
 const {
     GET_VENDOR,
-    UPDATE_VENDOR
+    UPDATE_VENDOR,
 } = require('../../endpoints/vendor.endpoints');
 
 const {
@@ -10,7 +10,7 @@ const {
     GET_COUPON,
     UPDATE_COUPON,
     DELETE_COUPON
-} = require("../../endpoints/coupon.endpoint")
+} = require("../../endpoints/coupon.endpoints")
 
 // Category Endpoints Policy
 const {

@@ -11,5 +11,5 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close();
-  console.log("Database connection closed.");
+  // console.log("Database connection closed.");
 });

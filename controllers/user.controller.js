@@ -421,11 +421,10 @@ exports.restoreUser = asyncHandler(async (req, res) => {
 });
 
 exports.getLikedVendors = asyncHandler(async (req, res) => {
-    console.log(req.user)
-    const vendorSelect = selectHandler({ role: req.user.role });
-    const vendorFilter = filterHandler({ role: req.user.role })
+    const { vendorSelect } = selectHandler({ role: req.user.role });
+    const { vendorFilter } = filterHandler({ role: req.user.role })
 
-    const users = await userRepo.isExist(
+    const users = await userRepo.findUser(
         { _id: req.user._id },
         "likedVendors",
         { 

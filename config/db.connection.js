@@ -7,7 +7,7 @@ const connect = async () => {
 
     // initiateSuperAdminAccount
     const createSuperAdmin = require("../helpers/createSuperAdmin");
-    createSuperAdmin();
+    // createSuperAdmin();
 
 
     console.log("Database connected successfully....");

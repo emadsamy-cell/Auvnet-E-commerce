@@ -1,19 +1,22 @@
+// Admin Endpoints Policy.
 const {
   GET_PROFILE,
   UPDATE_PROFILE,
   CREATE_ACCOUNT,
   GET_ADMINS,
   UPDATE_ROLE,
-  DELETE_ADMIN
-} = require("../../endpoints/admin.endpoint");
+  DELETE_ADMIN,
+  GET_ADMIN
+} = require("../../endpoints/admin.endpoints");
 
+// Coupon Endpoints Policy
 const {
   CREATE_COUPON,
   GET_COUPONS,
   GET_COUPON,
   UPDATE_COUPON,
   DELETE_COUPON
-} = require("../../endpoints/coupon.endpoint")
+} = require("../../endpoints/coupon.endpoints")
 
 // Category Endpoints Policy
 const {
@@ -23,10 +26,29 @@ const {
   DELETE_CATEGORY
 } = require("../../endpoints/category.endpoints");
 
+// Users Endpoints Policy
 const {
   LIST_USERS,
   DELETE_USER
-} = require("../../endpoints/user.endpoints");
+} = require("../../endpoints/user.endpoints")
+
+// Vendor Endpoints Policy
+const {
+  CREATE_VENDOR,
+  GET_VENDORS,
+  UPDATE_STATUS,
+  DELETE_VENDOR,
+} = require("../../endpoints/vendor.endpoints")
+
+// Voucher Endpoints Policy
+const {
+  CREATE_VOUCHER,
+  GET_VOUCHERS,
+  GET_VOUCHER,
+  UPDATE_VOUCHER,
+  DELETE_VOUCHER,
+
+} = require("../../endpoints/voucher.endpoints")
 
 const {
   GET_COLLECTION,
@@ -34,13 +56,15 @@ const {
 } = require('../../endpoints/collection.endpoints');
 
 module.exports = [
-  
   GET_PROFILE,
   UPDATE_PROFILE,
+
   CREATE_ACCOUNT,
   GET_ADMINS,
   UPDATE_ROLE,
   DELETE_ADMIN,
+  GET_ADMIN,
+
   CREATE_COUPON,
   GET_COUPONS,
   GET_COUPON,
@@ -56,5 +80,20 @@ module.exports = [
   DELETE_USER,
 
   GET_COLLECTION,
-  DELETE_COLLECTION
+  DELETE_COLLECTION,
+
+  LIST_USERS,
+  DELETE_USER,
+
+  CREATE_VENDOR,
+  GET_VENDORS,
+  UPDATE_STATUS,
+  DELETE_VENDOR,
+
+  CREATE_VOUCHER,
+  GET_VOUCHERS,
+  GET_VOUCHER,
+  UPDATE_VOUCHER,
+  DELETE_VOUCHER,
+
 ];
