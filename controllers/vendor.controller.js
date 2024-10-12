@@ -11,7 +11,7 @@ exports.signIn = asyncHandler(async (req, res) => {
 
     // check if the userName exists
     const isExist = await vendorRepo.findVendor(
-        { userName, isDeleted: false },
+        { userName },
         "-OTP -OTPExpiresAt -location -__v"
     );
 
@@ -26,6 +26,12 @@ exports.signIn = asyncHandler(async (req, res) => {
     if (!matched) {
         return res.status(401).json(
             createResponse(false, "Incorrect password", 401)
+        );
+    }
+    // check if the account is deleted
+    if (isExist.data.isDeleted) {
+        return res.status(401).json(
+            createResponse(false, "Your account has been deleted. Please contact support for further assistance.", 401)
         );
     }
 
@@ -63,7 +69,7 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
     
     // find the vendor with this email
     const vendor = await vendorRepo.findVendor(
-        { email, isDeleted: false },
+        { email },
         "status OTP OTPExpiresAt _id"
     )
 
@@ -74,12 +80,20 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
         );
     }
 
+    // check if the account is deleted
+    if (vendor.data.isDeleted) {
+        return res.status(401).json(
+            createResponse(false, "Your account has been deleted. Please contact support for further assistance.", 401)
+        );
+    }
+
     // check if the account is inactive
     if (vendor.data.status === "inactive") {
         return res.status(401).json(
             createResponse(false, "Your account has been suspended. Please contact support for further assistance.", 401)
         );
     }
+
 
     // if OTP is not equal to the vendor OTP
     if (vendor.data.OTP !== OTP) {
@@ -126,6 +140,13 @@ exports.forgetPassword = asyncHandler(async (req, res) => {
         );
     }
 
+    // check if the account is deleted
+    if (vendor.data.isDeleted) {
+        return res.status(401).json(
+            createResponse(false, "Your account has been deleted. Please contact support for further assistance.", 401)
+        );
+    }
+    
     // check if the account is inactive
     if (vendor.data.status === "inactive") {
         return res.status(401).json(
@@ -164,7 +185,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 
     // Find Vendor with this Email
     const vendor = await vendorRepo.findVendor(
-        { email, isDeleted: false },
+        { email },
         "OTP OTPExpiresAt _id status"
     );
 
@@ -172,6 +193,13 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     if (!vendor.success) {
         return res.status(vendor.statusCode).json(
             createResponse(vendor.success, "This email has no accounts", vendor.statusCode, vendor.error)
+        );
+    }
+
+    // check if the account is deleted
+    if (vendor.data.isDeleted) {
+        return res.status(401).json(
+            createResponse(false, "Your account has been deleted. Please contact support for further assistance.", 401)
         );
     }
 

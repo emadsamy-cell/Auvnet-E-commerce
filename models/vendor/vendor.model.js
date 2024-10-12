@@ -97,7 +97,11 @@ const vendorSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin',
-    }
+    },
+    collections: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Collection',
+    }]
 }, {
     timestamps: true
 });

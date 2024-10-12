@@ -23,6 +23,16 @@ const {
   DELETE_CATEGORY
 } = require("../../endpoints/category.endpoints");
 
+const {
+  LIST_USERS,
+  DELETE_USER
+} = require("../../endpoints/user.endpoints");
+
+const {
+  GET_COLLECTION,
+  DELETE_COLLECTION
+} = require('../../endpoints/collection.endpoints');
+
 module.exports = [
   
   GET_PROFILE,
@@ -40,5 +50,11 @@ module.exports = [
   GET_CATEGORY,
   CREATE_CATEGORY,
   UPDATE_CATEGORY,
-  DELETE_CATEGORY
+  DELETE_CATEGORY,
+
+  LIST_USERS,
+  DELETE_USER,
+
+  GET_COLLECTION,
+  DELETE_COLLECTION
 ];

@@ -24,6 +24,11 @@ const {
     DELETE_USER
 } = require("../../endpoints/user.endpoints")
 
+const {
+    GET_COLLECTION,
+    DELETE_COLLECTION
+} = require('../../endpoints/collection.endpoints');
+
 module.exports = [
     GET_PROFILE,
     UPDATE_PROFILE,
@@ -39,5 +44,8 @@ module.exports = [
     DELETE_CATEGORY,
 
     LIST_USERS,
-    DELETE_USER
+    DELETE_USER,
+
+    GET_COLLECTION,
+    DELETE_COLLECTION
 ]

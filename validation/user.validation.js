@@ -250,4 +250,23 @@ exports.parameterID = {
     .max(24)
     .message('Id must be a valid 24-character hex string (MongoDB ObjectId).'),
   }),
-} 
+}
+
+exports.listQuery = {
+  query: Joi.object({
+    page: Joi.number()
+      .min(1)
+      .messages({
+        'number.base': 'Page should be a type of number',
+        'number.min': 'Page should be at least 1',
+      }),
+    size: Joi.number()
+      .min(1)
+      .max(100)
+      .messages({
+        'number.base': 'size should be a type of number',
+        'number.min': 'size should be at least 1',
+        'number.max': 'size should be at most 100',
+      }),
+  }),
+}

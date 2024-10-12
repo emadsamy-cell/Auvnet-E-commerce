@@ -131,38 +131,22 @@ const userSchema = mongoose.Schema({
         type: String,
         default: null
     },
-    likedVendors: [
-        {
-            vendor: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Vendor'
-            }
-        }
-    ],
-    dislikedVendors: [
-        {
-            vendor: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Vendor'                
-            }
-        }
-    ],
-    likedCollections: [
-        {
-            collection: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Collection'
-            }
-        }
-    ],
-    dislikedCollections: [
-        {
-            collection: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Collection'                
-            }
-        }
-    ],
+    likedVendors: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vendor'
+    }],
+    dislikedVendors: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vendor'
+    }],
+    likedCollections: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Collection'  
+    }],
+    dislikedCollections:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Collection'  
+    }],
     couponClaimed: {
         type:mongoose.Schema.Types.ObjectId,
         ref: 'Coupon',

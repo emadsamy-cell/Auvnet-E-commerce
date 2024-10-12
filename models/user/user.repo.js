@@ -95,7 +95,7 @@ exports.create = async (data) => {
 };
 
 exports.updateUser = async (filter, update, options) => {
-    try {
+    //try {
         const result = await User.updateOne(filter, update, options);
         
         if (result.matchedCount === 1) {
@@ -115,7 +115,7 @@ exports.updateUser = async (filter, update, options) => {
                 error: `There are no user with this filter ${filter}!!`
             }
         }
-    } catch (error) {
+    /*} catch (error) {
         return {
             success: false,
             statusCode: 500,
@@ -123,12 +123,12 @@ exports.updateUser = async (filter, update, options) => {
             data: null,
             error
         };
-    }
+    }*/
 };
 
 exports.deleteUser = async (filter) => {
     try {
-        const result = await model.deleteOne(filter);
+        const result = await User.deleteOne(filter);
 
         if (result.deletedCount === 0) {
             return {

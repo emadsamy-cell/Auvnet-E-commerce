@@ -6,6 +6,7 @@ const mailManager = require('../utils/emailService');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { createResponse } = require('../utils/createResponse');
 const { paginate } = require('../utils/pagination');
+const { selectHandler, filterHandler } = require('../helpers/filterAndSelectManager')
 
 exports.signUp = asyncHandler(async (req, res) => {
     let { name, userName, email, password } = req.body;
@@ -416,5 +417,103 @@ exports.restoreUser = asyncHandler(async (req, res) => {
 
     return res.status(result.statusCode).json(
         createResponse(result.success, "User has been restored successfully", result.statusCode, result.error)
+    );
+});
+
+exports.getLikedVendors = asyncHandler(async (req, res) => {
+    console.log(req.user)
+    const vendorSelect = selectHandler({ role: req.user.role });
+    const vendorFilter = filterHandler({ role: req.user.role })
+
+    const users = await userRepo.isExist(
+        { _id: req.user._id },
+        "likedVendors",
+        { 
+            path: 'likedVendors', select: vendorSelect, match: vendorFilter
+        }
+    )
+
+    res.status(users.statusCode).json(
+        createResponse(users.success, users.message, users.statusCode, users.error, users.data)
+    );
+}); 
+
+exports.likeVendor = asyncHandler(async (req, res) => {
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        { 
+            $addToSet: { likedVendors: req.params.id },
+            $pull: { dislikedVendors: req.params.id }
+        }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, result.message, result.statusCode, result.error)
+        );
+    }
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Vendor has been liked successfully", result.statusCode)
+    );
+});
+
+exports.dislikeVendor = asyncHandler(async (req, res) => {
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        {
+            $addToSet: { dislikedVendors: req.params.id }, 
+            $pull: { likedVendors: req.params.id }
+        }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, result.message, result.statusCode, result.error)
+        );
+    }
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Vendor has been disliked successfully", result.statusCode)
+    );
+});
+
+exports.likeCollection = asyncHandler(async (req, res) => {
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        { 
+            $addToSet: { likedCollections: req.params.id },
+            $pull: { dislikedCollections: req.params.id }
+        }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, result.message, result.statusCode, result.error)
+        );
+    }
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Collection has been liked successfully", result.statusCode)
+    );
+});
+
+exports.dislikeCollection = asyncHandler(async (req, res) => {
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        {
+            $addToSet: { dislikedCollections: req.params.id }, 
+            $pull: { likedCollections: req.params.id }
+        }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, result.message, result.statusCode, result.error)
+        );
+    }
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Collection has been disliked successfully", result.statusCode)
     );
 });

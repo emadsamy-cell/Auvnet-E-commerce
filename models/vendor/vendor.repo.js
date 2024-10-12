@@ -8,6 +8,28 @@ const Vendor = require('./vendor.model');
     @params select: string
 */
 
+exports.aggregation = async(pipeline) => {
+    try {
+        const result = await Vendor.aggregate(pipeline);
+
+        return {
+            success: true,
+            statusCode: 200,
+            message: "Vendors has been found!",
+            data: result,
+            error: null
+        };
+    } catch (error) {
+        return {
+            success: false,
+            statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
+            error
+        }
+    }
+}
+
 exports.getList = async (filter, select, populate, skip, limit, sort) => {
     try {
         const [ vendors, vendorCount ] = await Promise.all([
@@ -128,7 +150,7 @@ exports.updateVendor = async (filter, update, options) => {
 
 exports.deleteVendor = async (filter) => {
     try {
-        const result = await model.deleteOne(filter);
+        const result = await Vendor.deleteOne(filter);
 
         if (result.deletedCount === 0) {
             return {

@@ -17,6 +17,13 @@ const {
     GET_CATEGORY,
 } = require('../../endpoints/category.endpoints');
 
+const {
+    GET_COLLECTION,
+    CREATE_COLLECTION,
+    UPDATE_COLLECTION,
+    DELETE_COLLECTION
+} = require('../../endpoints/collection.endpoints');
+
 module.exports = [
     GET_VENDOR,
     UPDATE_VENDOR,
@@ -26,5 +33,10 @@ module.exports = [
     UPDATE_COUPON,
     DELETE_COUPON,
 
-    GET_CATEGORY
+    GET_CATEGORY,
+
+    GET_COLLECTION,
+    CREATE_COLLECTION,
+    UPDATE_COLLECTION,
+    DELETE_COLLECTION
 ];
