@@ -8,6 +8,37 @@ const User = require('./user.model');
     @params select: string
 */
 
+exports.getList = async (filter, select, populate, skip, limit, sort) => {
+    try {
+        const [ users, usersCount ] = await Promise.all([
+            User.find(filter).select(select).populate(populate).skip(skip).limit(limit).sort(sort),
+            User.countDocuments(filter)
+        ]);
+
+        const pages = Math.ceil(usersCount / limit);
+
+        return {
+            success: true,
+            statusCode: 200,
+            message: "Users has been found!",
+            data: {
+                users,
+                pages
+            },
+            error: null
+        };
+        
+    } catch (error) {
+        return {
+            success: false,
+            statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
+            error
+        };
+    }
+}
+
 exports.findUser = async (filter, select, populate) => {
     try {
         const user = await User.findOne(filter).select(select).populate(populate);
@@ -64,7 +95,7 @@ exports.create = async (data) => {
 };
 
 exports.updateUser = async (filter, update, options) => {
-    try {
+    //try {
         const result = await User.updateOne(filter, update, options);
         
         if (result.matchedCount === 1) {
@@ -84,7 +115,7 @@ exports.updateUser = async (filter, update, options) => {
                 error: `There are no user with this filter ${filter}!!`
             }
         }
-    } catch (error) {
+    /*} catch (error) {
         return {
             success: false,
             statusCode: 500,
@@ -92,12 +123,12 @@ exports.updateUser = async (filter, update, options) => {
             data: null,
             error
         };
-    }
+    }*/
 };
 
 exports.deleteUser = async (filter) => {
     try {
-        const result = await model.deleteOne(filter);
+        const result = await User.deleteOne(filter);
 
         if (result.deletedCount === 0) {
             return {

@@ -12,13 +12,11 @@ const userSchema = mongoose.Schema({
         required: true,
         lowercase: true,
         trim: true,
-        index: true
     },
     userName: {
         type: String,
         required : true,
         unique: true,
-        index: true
     },
     password: {
         type: String,
@@ -125,10 +123,6 @@ const userSchema = mongoose.Schema({
         type: String,
         default: 'user'
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
     coins: {
         type: Number,
         default: 0
@@ -137,22 +131,22 @@ const userSchema = mongoose.Schema({
         type: String,
         default: null
     },
-    likedVendors: [
-        {
-            vendor: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Vendor'
-            }
-        }
-    ],
-    dislikedVendors: [
-        {
-            vendor: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Vendor'                
-            }
-        }
-    ],
+    likedVendors: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vendor'
+    }],
+    dislikedVendors: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Vendor'
+    }],
+    likedCollections: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Collection'  
+    }],
+    dislikedCollections:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Collection'  
+    }],
     couponClaimed: {
         type:mongoose.Schema.Types.ObjectId,
         ref: 'Coupon',
@@ -171,7 +165,15 @@ const userSchema = mongoose.Schema({
         type: Date,
         select: false
     },
-});
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        select: false
+    }
+}, {
+    timestamps: true
+    }
+);
 
 userSchema.index({ location: '2dsphere' });
 

@@ -40,7 +40,7 @@ const OTP = joi.string().min(6).max(6).required().messages({
 })
 
 // _______________________________ Validation Schema _______________________________
-const adminLoginValidation = {
+exports.adminLoginValidation = {
   body: joi
     .object()
     .required()
@@ -53,7 +53,7 @@ const adminLoginValidation = {
     }),
 };
 
-const verifyOTPValidation = {
+exports.verifyOTPValidation = {
   body: joi
     .object()
     .required()
@@ -63,7 +63,7 @@ const verifyOTPValidation = {
     }),
 };
 
-const requestOTPValidation = {
+exports.requestOTPValidation = {
   body: joi
     .object()
     .required()
@@ -72,18 +72,34 @@ const requestOTPValidation = {
     }),
 };
 
-const updateAdminProfileValidation = {
+exports.updateAdminProfileValidation = {
   body: joi
     .object()
     .required()
     .keys({
-      userName,
-      phoneNumber,
-      email,
+      userName: joi.string().min(3).max(30).alphanum().messages({
+        'string.base': 'Username should be a type of text',
+        "string.empty": "Username is required",
+        "string.min": "Username must be at least 3 characters long",
+        'string.alphanum': 'Username should only contain alphanumeric characters',
+        'string.max': 'Username should have at most 30 characters',
+        "any.required": "Username is required",
+      }),
+      phoneNumber: joi.string().messages({
+        "string.base": "Phone number should be a type of text",
+        "string.empty": "Phone number is required",
+        "any.required": "Phone number is required",
+      }),
+      email: joi.string().email().messages({
+        "string.base": "Email should be a type of text",
+        "string.empty": "Email is required",
+        "string.email": "Email must be a valid email",
+        "any.required": "Email is required",
+      }),
     }),
 };
 
-const updateAdminPasswordValidation = {
+exports.updateAdminPasswordValidation = {
   body: joi
     .object()
     .required()
@@ -96,7 +112,7 @@ const updateAdminPasswordValidation = {
     }),
 };
 
-const createAdminAccountValidation = {
+exports.createAdminAccountValidation = {
   body: joi
     .object()
     .required()
@@ -108,7 +124,7 @@ const createAdminAccountValidation = {
     }),
 };
 
-const updateAdminRoleValidation = {
+exports.updateAdminRoleValidation = {
   body: joi
     .object()
     .required()
@@ -132,7 +148,7 @@ const updateAdminRoleValidation = {
     }),
 };
 
-const deleteAdminValidation = {
+exports.deleteAdminValidation = {
   params: joi
     .object()
     .required()
@@ -146,14 +162,14 @@ const deleteAdminValidation = {
     }),
 };
 
+exports.getById = {
+  params: joi.object({
+    adminId: joi.string().length(24).required().messages({
+      'string.length': 'admin ID must be exactly 24 characters long.',
+      'string.base': 'admin ID must be a string.',
+      'string.empty': 'admin ID can not be empty.',
+      'any.required': 'admin ID is required.',
+    }),
+  })
+}
 
-module.exports = {
-  adminLoginValidation,
-  verifyOTPValidation,
-  requestOTPValidation,
-  updateAdminProfileValidation,
-  updateAdminPasswordValidation,
-  createAdminAccountValidation,
-  updateAdminRoleValidation,
-  deleteAdminValidation
-};

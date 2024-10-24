@@ -11,13 +11,11 @@ const vendorSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        index: true
     },
     userName: {
         type: String,
         required: true,
         unique: true,
-        index: true
     },
     password: {
         type: String,
@@ -25,9 +23,9 @@ const vendorSchema = new mongoose.Schema({
     },
     OTP: {
         type: String,
-        default: null
+        default: "Not Verified OTP"
     },
-    OTPExpireAt: {
+    OTPExpiresAt: {
         type: Date,
         default: null
     },
@@ -75,10 +73,6 @@ const vendorSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
     role: {
         type: String,
         default: 'vendor'
@@ -87,7 +81,29 @@ const vendorSchema = new mongoose.Schema({
         type: String,
         enum: ['Male', 'Female'],
         default: 'Male'
-    }
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
+    totalLikes: {
+        type: Number,
+        default: 0
+    },
+    totalDislikes: {
+        type: Number,
+        default: 0
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin',
+    },
+    collections: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Collection',
+    }]
+}, {
+    timestamps: true
 });
 
 vendorSchema.index({ location: '2dsphere' });

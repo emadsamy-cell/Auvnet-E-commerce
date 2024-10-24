@@ -18,7 +18,7 @@ passport.use(new GoogleStrategy({
   passReqToCallback: true
 },
   (request, accessToken, refreshToken, profile, done) => {
-    console.log(`From passportSetup.js: accessToken: ${accessToken}, refreshToken: ${refreshToken}, profile: ${profile}`);
+    // console.log(`From passportSetup.js: accessToken: ${accessToken}, refreshToken: ${refreshToken}, profile: ${profile}`);
     done(null, profile);
   }
 ));

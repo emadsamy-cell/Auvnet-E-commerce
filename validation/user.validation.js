@@ -59,7 +59,6 @@ exports.userSignUp = {
   }),
 };
 
-
 exports.userSignIn = {
   body: Joi.object({
     email: Joi.string()
@@ -104,6 +103,9 @@ exports.verifyOTP = {
       .required()
       .messages({
         'string.base': 'OTP should be a type of text',
+        'string.empty': 'OTP cannot be empty',
+        'string.min': 'OTP should have at least 3 characters',
+        'string.max': 'OTP should have at most 8 characters',
         'any.required': 'OTP is required'
       }),
     email: Joi.string()
@@ -161,18 +163,6 @@ exports.resetPassword = {
         'any.required': 'Confirm password is required'
       })
   }),
-}
-
-exports.token = {
-  headers: Joi.object({
-    authorization: Joi.string()
-      .required()
-      .pattern(/^Bearer\s[\w-]+\.[\w-]+\.[\w-]+$/) // Bearer token pattern
-      .messages({
-        'any.required': 'Authorization is required',
-        'string.pattern.base': 'Invalid token format'
-      })
-  })
 }
 
 exports.updateUserProfile = {
@@ -234,15 +224,6 @@ exports.updateUserProfile = {
 
 exports.changeUerPassword = {
   body: Joi.object({
-    currentPassword: Joi.string()
-      .min(8)
-      .required()
-      .messages({
-        'string.base': 'Password should be a type of text',
-        'string.empty': 'Password cannot be empty',
-        'string.min': 'Password should have at least 8 characters',
-        'any.required': 'Password is required'
-      }),
     newPassword: Joi.string()
       .min(8)
       .required()
@@ -259,5 +240,33 @@ exports.changeUerPassword = {
         'any.only': 'Confirm password does not match the password',
         'any.required': 'Confirm password is required'
       })
+  }),
+}
+
+exports.parameterID = {
+  params: Joi.object({
+    id: Joi.string()
+    .min(24)
+    .max(24)
+    .message('Id must be a valid 24-character hex string (MongoDB ObjectId).'),
+  }),
+}
+
+exports.listQuery = {
+  query: Joi.object({
+    page: Joi.number()
+      .min(1)
+      .messages({
+        'number.base': 'Page should be a type of number',
+        'number.min': 'Page should be at least 1',
+      }),
+    size: Joi.number()
+      .min(1)
+      .max(100)
+      .messages({
+        'number.base': 'size should be a type of number',
+        'number.min': 'size should be at least 1',
+        'number.max': 'size should be at most 100',
+      }),
   }),
 }

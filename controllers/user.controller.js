@@ -5,6 +5,8 @@ const tokenManager = require('../helpers/tokenManager');
 const mailManager = require('../utils/emailService');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { createResponse } = require('../utils/createResponse');
+const { paginate } = require('../utils/pagination');
+const { selectHandler, filterHandler } = require('../helpers/filterAndSelectManager')
 
 exports.signUp = asyncHandler(async (req, res) => {
     let { name, userName, email, password } = req.body;
@@ -62,7 +64,7 @@ exports.signIn = asyncHandler(async (req, res) => {
     // check if the userName or email exists
     const isExist = await userRepo.findUser(
         { $or: [{ email }, { userName }] },
-        "-OTP -accountType -createAt -couponClaimed -voucherClaimed"
+        "-OTP -accountType -createdAt -couponClaimed -voucherClaimed -likedVendors -dislikedVendors -__v" 
     );
 
     if (!isExist.success) {
@@ -76,6 +78,13 @@ exports.signIn = asyncHandler(async (req, res) => {
     if (!matched) {
         return res.status(401).json(
             createResponse(false, "Incorrect password", 401)
+        );
+    }
+
+    // Check if the account is deleted
+    if (isExist.data.isDeleted) {
+        return res.status(401).json(
+            createResponse(false, "This account has been suspended. Please contact support for further assistance.", 401)
         );
     }
 
@@ -113,7 +122,7 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
 
     // find the user and update the OTP to null
     const user = await userRepo.findUser(
-        { email },
+        { email, isDeleted: false },
         "OTP OTPExpiresAt _id"
     )
 
@@ -121,6 +130,13 @@ exports.verifyOTP = asyncHandler(async (req, res) => {
     if (!user.success) {
         return res.status(user.statusCode).json(
             createResponse(user.success, "This email has no accounts", user.statusCode, user.error)
+        );
+    }
+
+    // Check if the account is deleted
+    if (user.data.isDeleted) {
+        return res.status(401).json(
+            createResponse(false, "This account has been suspended. Please contact support for further assistance.", 401)
         );
     }
 
@@ -158,15 +174,16 @@ exports.resendOTP = asyncHandler(async (req, res) => {
 
     // Add OTP code to this email
     let result = await userRepo.updateUser(
-        { email },
+        { email, isDeleted: false },
         { OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
     );
 
     // email not found
-    if (!result.success)
+    if (!result.success) {
         return res.status(result.statusCode).json(
             createResponse(result.success, "This email has no accounts", result.statusCode, result.error)
         );
+    }
 
     // send email to the user
     result = await mailManager.emailSetup("OTPVerification", {
@@ -196,15 +213,16 @@ exports.forgetPassword = asyncHandler(async (req, res) => {
 
     // Add OTP code to this email
     let result = await userRepo.updateUser(
-        { email },
+        { email, isDeleted: false },
         { OTP: OTP.value, OTPExpiresAt: OTP.expiresAt }
     );
 
     // email not found
-    if (!result.success)
+    if (!result.success) {
         return res.status(result.statusCode).json(
             createResponse(result.success, "This email has no accounts", result.statusCode, result.error)
         );
+    }
 
     // send OTP code to that email
     result = await mailManager.emailSetup("forgetPassword", {
@@ -232,8 +250,8 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 
     // Update user with email and otp is null then update password
     let result = await userRepo.updateUser(
-        { email, OTP: null },
-        { isVerified: true, password },
+        { email, OTP: null, isDeleted: false },
+        { isVerified: true, password, OTP: "Not Verified OTP" },
     );
 
     if (!result.success) {
@@ -314,27 +332,7 @@ exports.updateProfile = asyncHandler(async (req, res) => {
 });
 
 exports.changePassword = asyncHandler(async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-
-    // get the user with id
-    const user = await userRepo.findUser(
-        { _id: req.user._id },
-        "password"
-    );
-
-    if (!user.success) {
-        return res.status(user.statusCode).json(
-            createResponse(user.success, "This user is not found", user.statusCode, user.error)
-        );
-    }
-
-    // compare the old password with the current password
-    const matched = await passwordManager.comparePassword(currentPassword, user.data.password);
-    if (!matched) {
-        return res.status(401).json(
-            createResponse(false, "Incorrect password", 401)
-        );
-    }
+    const { newPassword } = req.body;
 
     // update the password with the new password
     const password = await passwordManager.hashPassword(newPassword);
@@ -355,71 +353,166 @@ exports.changePassword = asyncHandler(async (req, res) => {
     );
 });
 
-exports.socialLoginCallback = asyncHandler(async (req, res) => {
-    let { provider, displayName, email, email_verified, picture } = req.user;
-    const userName = email.split('@')[0];
-    if (!displayName) displayName = userName;
-    if (!provider) provider = 'apple';
+exports.listUsers = asyncHandler(async (req, res) => {
+    const { limit, skip } = paginate(req.query.page, req.query.size);
 
-    // check if the email is verified
-    if (!email_verified) {
-        return res.status(400).json(createResponse(false, 'Social Login authentication failed: Invalid email', 400));
-    }
+    const users = await userRepo.getList(
+        {  },
+        "name email userName country city region phone gender coins image isDeleted",
+        null,
+        skip,
+        limit,
+        { createdAt: -1 }
+    )
 
-    // check if the email already exist
-    const userExist = await userRepo.findUser(
-        { email },
-        "userName role master"
+    res.status(users.statusCode).json(
+        createResponse(users.success, users.message, users.statusCode, users.error, users.data)
     );
-    if (userExist.success) {
-        // Generate tokens for the user
-        const accessToken = tokenManager.generateToken(userExist.data);
-        const refreshToken = tokenManager.generateRefreshToken(userExist.data);
-
-        // Send refresh token in secure cookie
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict',
-            path: '/v1/auth/refresh',
-            maxAge: +process.env.COOKIE_MAX_AGE_MS
-        });
-
-        return res.redirect(`${process.env.frontendBaseURL}?token=${accessToken}`);
-    }
-
-    const hashedPassword = await passwordManager.hashPassword(process.env.DEFAULT_PASSWORD);
-
-    // create new user with the google account
-    const newUser = await userRepo.create({
-        name: displayName,
-        userName,
-        email,
-        password: hashedPassword,
-        image: picture,
-        accountType: provider,
-        isVerified: email_verified
-    });
-    if (!newUser.success) {
-        return res.status(400).json(createResponse(newUser.success, "Social Login authentication failed: Failed to save user", newUser.statusCode, newUser.error));
-    }
-
-    // Generate tokens for the user
-    const accessToken = tokenManager.generateToken(newUser.data);
-    const refreshToken = tokenManager.generateRefreshToken(newUser.data);
-
-    // Send refresh token in secure cookie
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'Strict',
-        path: '/v1/auth/refresh',
-        maxAge: +process.env.COOKIE_MAX_AGE_MS
-    });
-
-    return res.redirect(`${process.env.frontendBaseURL}?token=${accessToken}`);
 });
 
-exports.socialLoginFail = asyncHandler(async (req, res) => {
-    return res.status(400).json(createResponse(false, 'Social Login authentication failed', 400))
-})
+exports.deleteUser = asyncHandler(async (req, res) => {
+    const user = await userRepo.findUser({ _id: req.params.id }, "isDeleted");
+    
+    if (!user.success) {
+        return res.status(user.statusCode).json(
+            createResponse(user.success, "User not found", user.statusCode, user.error)
+        );
+    }
+
+    if (user.data.isDeleted) {
+        return res.status(422).json(
+            createResponse(false, "This user is deleted before", 422)
+        );
+    }
+
+    const result = await userRepo.updateUser(
+        { _id: req.params.id },
+        { isDeleted: true }
+    );
+
+    return res.status(204).json(
+        createResponse(result.success, "This user has been deleted successfully", 204, result.error)
+    );
+});
+
+exports.restoreUser = asyncHandler(async (req, res) => {
+    const user = await userRepo.findUser({ _id: req.params.id }, "isDeleted");
+    
+    if (!user.success) {
+        return res.status(user.statusCode).json(
+            createResponse(user.success, "User not found", user.statusCode, user.error)
+        );
+    }
+
+    if (!user.data.isDeleted) {
+        return res.status(422).json(
+            createResponse(false, "This user isn't deleted", 422)
+        );
+    }
+
+    const result = await userRepo.updateUser(
+        { _id: req.params.id },
+        { isDeleted: false }
+    );
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "User has been restored successfully", result.statusCode, result.error)
+    );
+});
+
+exports.getLikedVendors = asyncHandler(async (req, res) => {
+    const { vendorSelect } = selectHandler({ role: req.user.role });
+    const { vendorFilter } = filterHandler({ role: req.user.role })
+
+    const users = await userRepo.findUser(
+        { _id: req.user._id },
+        "likedVendors",
+        { 
+            path: 'likedVendors', select: vendorSelect, match: vendorFilter
+        }
+    )
+
+    res.status(users.statusCode).json(
+        createResponse(users.success, users.message, users.statusCode, users.error, users.data)
+    );
+}); 
+
+exports.likeVendor = asyncHandler(async (req, res) => {
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        { 
+            $addToSet: { likedVendors: req.params.id },
+            $pull: { dislikedVendors: req.params.id }
+        }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, result.message, result.statusCode, result.error)
+        );
+    }
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Vendor has been liked successfully", result.statusCode)
+    );
+});
+
+exports.dislikeVendor = asyncHandler(async (req, res) => {
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        {
+            $addToSet: { dislikedVendors: req.params.id }, 
+            $pull: { likedVendors: req.params.id }
+        }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, result.message, result.statusCode, result.error)
+        );
+    }
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Vendor has been disliked successfully", result.statusCode)
+    );
+});
+
+exports.likeCollection = asyncHandler(async (req, res) => {
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        { 
+            $addToSet: { likedCollections: req.params.id },
+            $pull: { dislikedCollections: req.params.id }
+        }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, result.message, result.statusCode, result.error)
+        );
+    }
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Collection has been liked successfully", result.statusCode)
+    );
+});
+
+exports.dislikeCollection = asyncHandler(async (req, res) => {
+    const result = await userRepo.updateUser(
+        { _id: req.user._id },
+        {
+            $addToSet: { dislikedCollections: req.params.id }, 
+            $pull: { likedCollections: req.params.id }
+        }
+    );
+
+    if (!result.success) {
+        return res.status(result.statusCode).json(
+            createResponse(result.success, result.message, result.statusCode, result.error)
+        );
+    }
+
+    return res.status(result.statusCode).json(
+        createResponse(result.success, "Collection has been disliked successfully", result.statusCode)
+    );
+});

@@ -1,0 +1,17 @@
+const CREATE_VOUCHER = "voucher:CREATE_VOUCHER";
+const GET_VOUCHERS = "voucher:GET_VOUCHERS";
+const GET_VOUCHER = "voucher:GET_VOUCHER";
+const UPDATE_VOUCHER = "voucher:UPDATE_VOUCHER";
+const DELETE_VOUCHER = "voucher:DELETE_VOUCHER";
+const CLAIM_VOUCHER = "voucher:CLAIM_VOUCHER";
+const REDEEM_VOUCHER = "voucher:REDEEM_VOUCHER";
+
+module.exports = {
+    CREATE_VOUCHER,
+    GET_VOUCHERS,
+    GET_VOUCHER,
+    UPDATE_VOUCHER,
+    DELETE_VOUCHER,
+    CLAIM_VOUCHER,
+    REDEEM_VOUCHER
+};

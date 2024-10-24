@@ -1,25 +1,26 @@
 const router = require("express").Router();
 const auth = require("../../middlewares/auth")
 const { validation } = require("../../middlewares/validation")
-const { GET_PROFILE, UPDATE_PROFILE, CREATE_ACCOUNT, GET_ADMINS, UPDATE_ROLE, DELETE_ADMIN } = require("../../endpoints/admin.endpoint")
-const { updateAdminProfileValidation, createAdminAccountValidation, adminLoginValidation, verifyOTPValidation, requestOTPValidation, updateAdminRoleValidation, deleteAdminValidation, updateAdminPasswordValidation } = require("../../validation/admin.validation");
-const { getProfileController, updateProfileController, createAdminAccountController, adminLoginController, verifyOTPController, requestOTPController, getAllAdminsController, updateAdminRoleController, deleteAdminController, changePasswordController } = require("../../controllers/admin.controller");
+const endpoints = require("../../endpoints/admin.endpoints")
+const adminValidator = require("../../validation/admin.validation");
+const adminController = require("../../controllers/admin.controller");
 
 // Auth routes
-router.post("/auth/signIn", validation(adminLoginValidation), adminLoginController)
-router.post("/auth/verify-otp", validation(verifyOTPValidation), verifyOTPController)
-router.get("/auth/request-otp", validation(requestOTPValidation), requestOTPController)
+router.post("/auth/signIn", validation(adminValidator.adminLoginValidation), adminController.adminLoginController)
+router.post("/auth/verify-otp", validation(adminValidator.verifyOTPValidation), adminController.verifyOTPController)
+router.get("/auth/request-otp", validation(adminValidator.requestOTPValidation), adminController.requestOTPController)
 
 // Profile routes
-router.get('/profile', auth(GET_PROFILE), getProfileController);
-router.patch('/profile', validation(updateAdminProfileValidation), auth(UPDATE_PROFILE), updateProfileController);
-router.patch('/profile/password', validation(updateAdminPasswordValidation), auth(UPDATE_PROFILE), changePasswordController);
+router.get('/profile', auth(endpoints.GET_PROFILE), adminController.getProfileController);
+router.patch('/profile', validation(adminValidator.updateAdminProfileValidation), auth(endpoints.UPDATE_PROFILE), adminController.updateProfileController);
+router.patch('/profile/password', validation(adminValidator.updateAdminPasswordValidation), auth(endpoints.UPDATE_PROFILE), adminController.changePasswordController);
 
 // Admin management routes
-router.post('/', validation(createAdminAccountValidation), auth(CREATE_ACCOUNT), createAdminAccountController);
-router.get('/', auth(GET_ADMINS), getAllAdminsController);
-router.patch('/:adminId/role', validation(updateAdminRoleValidation), auth(UPDATE_ROLE), updateAdminRoleController);
-router.delete('/:adminId', validation(deleteAdminValidation), auth(DELETE_ADMIN), deleteAdminController);
-router.patch('/:adminId/restore', validation(deleteAdminValidation), auth(DELETE_ADMIN), deleteAdminController);
+router.post('/', validation(adminValidator.createAdminAccountValidation), auth(endpoints.CREATE_ACCOUNT), adminController.createAdminAccountController);
+router.get('/', auth(endpoints.GET_ADMINS), adminController.getAllAdminsController);
+router.patch('/:adminId/role', validation(adminValidator.updateAdminRoleValidation), auth(endpoints.UPDATE_ROLE), adminController.updateAdminRoleController);
+router.delete('/:adminId', validation(adminValidator.deleteAdminValidation), auth(endpoints.DELETE_ADMIN), adminController.deleteAdminController);
+router.patch('/:adminId/restore', validation(adminValidator.deleteAdminValidation), auth(endpoints.DELETE_ADMIN), adminController.deleteAdminController);
+router.get('/:adminId', validation(adminValidator.getById), auth(endpoints.GET_ADMIN), adminController.getById);
 
 module.exports = router;

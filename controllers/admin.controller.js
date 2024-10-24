@@ -11,7 +11,7 @@ const { paginate } = require("../utils/pagination");
 const roles = require("../enums/roles");
 
 // Admin login
-const adminLoginController = asyncHandler(async (req, res) => {
+exports.adminLoginController = asyncHandler(async (req, res) => {
   const { userName, password } = req.body;
 
   // Check if admin exists with the given userName
@@ -53,14 +53,14 @@ const adminLoginController = asyncHandler(async (req, res) => {
 });
 
 // Verify OTP
-const verifyOTPController = asyncHandler(async (req, res) => {
+exports.verifyOTPController = asyncHandler(async (req, res) => {
   const { userName, OTP } = req.body;
 
   // Check if OTP is valid and update the OTP field if it is.
   const result = await adminRepo.updateAndReturn(
     { userName, OTP, OTPExpiresAt: { $gt: new Date() } },
     { OTP: null },
-    "userName role master"
+    "userName role master phoneNumber"
   )
   if (!result.success) {
     return res.status(403).json(createResponse(result.success, "Invalid OTP or OTP is expired", 403));
@@ -79,11 +79,13 @@ const verifyOTPController = asyncHandler(async (req, res) => {
     maxAge: +process.env.COOKIE_MAX_AGE_MS
   });
 
-  return res.status(200).json(createResponse(true, "Login successfully", 200, null, { token: accessToken }));
+  delete result.data.master;
+
+  return res.status(200).json(createResponse(true, "Login successfully", 200, null, { token: accessToken, admin: result.data }));
 });
 
 // Request OTP
-const requestOTPController = asyncHandler(async (req, res) => {
+exports.requestOTPController = asyncHandler(async (req, res) => {
   const { userName } = req.body;
 
   // Check if admin exists with the given userName
@@ -121,7 +123,7 @@ const requestOTPController = asyncHandler(async (req, res) => {
 });
 
 // Get admin profile
-const getProfileController = asyncHandler(async (req, res) => {
+exports.getProfileController = asyncHandler(async (req, res) => {
   const adminId = req.user._id;
 
   // Check if admin exists with the given id
@@ -134,7 +136,7 @@ const getProfileController = asyncHandler(async (req, res) => {
 });
 
 // Update admin profile
-const updateProfileController = asyncHandler(async (req, res) => {
+exports.updateProfileController = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
   // Update admin profile
@@ -152,7 +154,7 @@ const updateProfileController = asyncHandler(async (req, res) => {
 });
 
 // Update admin password
-const changePasswordController = asyncHandler(async (req, res) => {
+exports.changePasswordController = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
   // get the user with given id
@@ -187,7 +189,7 @@ const changePasswordController = asyncHandler(async (req, res) => {
 });
 
 // Create admin account
-const createAdminAccountController = asyncHandler(async (req, res) => {
+exports.createAdminAccountController = asyncHandler(async (req, res) => {
   const { userName, email, password, phoneNumber } = req.body;
   // Hash password
   const hashedPassword = await hashPassword(password);
@@ -199,7 +201,7 @@ const createAdminAccountController = asyncHandler(async (req, res) => {
   }
 
   // Send email to admin with credentials
-  const emailSent = await sendEmailToAdminController({ userName, email, password, phoneNumber, });
+  const emailSent = await sendEmailToAdminController({ userName, email, password, phoneNumber });
   if (!emailSent.success) {
     return res.status(emailSent.status).json(createResponse(emailSent.success, emailSent.message, emailSent.statusCode, emailSent.error));
   }
@@ -215,14 +217,15 @@ const sendEmailToAdminController = async (admin) => {
     userName: admin.userName,
     password: admin.password,
     phoneNumber: admin.phoneNumber,
+    role: "Admin"
   };
 
-  const emailSent = await mailManager.emailSetup("adminCredentials", emailOptions);
+  const emailSent = await mailManager.emailSetup("accountCredentials", emailOptions);
   return emailSent;
 };
 
 // Get all admins for super admin
-const getAllAdminsController = asyncHandler(async (req, res) => {
+exports.getAllAdminsController = asyncHandler(async (req, res) => {
   const { page, size } = req.query;
   const options = paginate(page, size);
 
@@ -236,7 +239,7 @@ const getAllAdminsController = asyncHandler(async (req, res) => {
 });
 
 // Update admin role
-const updateAdminRoleController = asyncHandler(async (req, res) => {
+exports.updateAdminRoleController = asyncHandler(async (req, res) => {
   const { adminId } = req.params;
   const { newRole } = req.body;
 
@@ -258,7 +261,7 @@ const updateAdminRoleController = asyncHandler(async (req, res) => {
 })
 
 // Delete/unDelete admin
-const deleteAdminController = asyncHandler(async (req, res) => {
+exports.deleteAdminController = asyncHandler(async (req, res) => {
   const { adminId } = req.params;
   const isDeleted = req.method === "DELETE" ? true : false;
 
@@ -279,15 +282,18 @@ const deleteAdminController = asyncHandler(async (req, res) => {
     res.status(200).json(createResponse(deletedAdmin.success, "Admin is restored successfully", 200))
 })
 
-module.exports = {
-  adminLoginController,
-  verifyOTPController,
-  requestOTPController,
-  getProfileController,
-  updateProfileController,
-  changePasswordController,
-  createAdminAccountController,
-  getAllAdminsController,
-  updateAdminRoleController,
-  deleteAdminController
-};
+// Get admin by ID
+exports.getById = asyncHandler(async (req, res) => {
+  const adminId = req.params.adminId;
+
+  // Check if admin exists with the given id
+  const adminProfile = await adminRepo.isExist(
+    { _id: adminId },
+    "userName email phoneNumber"
+  );
+  if(!adminProfile.success) {
+    return res.status(adminProfile.statusCode).json(createResponse(adminProfile.success, adminProfile.message, adminProfile.statusCode));
+  }
+  return res.status(200).json(createResponse(true, "Admin profile fetched successfully", 200, null, adminProfile.data));
+});
+

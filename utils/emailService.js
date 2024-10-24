@@ -4,7 +4,7 @@ const templateManager = require('../helpers/email.template');
 
 const transporter = nodemailer.createTransport(emailConfig);
 
-exports.emailSetup = async(emailType, emailOptions) => {
+exports.emailSetup = async (emailType, emailOptions) => {
   let mailOptions = {
     from: process.env.EMAIL_USERNAME,
     to: emailOptions.email
@@ -12,22 +12,22 @@ exports.emailSetup = async(emailType, emailOptions) => {
 
   if (emailType === "OTPVerification") {
     mailOptions['subject'] = emailOptions.subject,
-    mailOptions['html'] = templateManager.otpTemplate(emailOptions.OTP)
+      mailOptions['html'] = templateManager.otpTemplate(emailOptions.OTP)
   }
 
   else if (emailType === "forgetPassword") {
     mailOptions['subject'] = emailOptions.subject,
-    mailOptions['html'] = templateManager.forgetPasswordTemplate(emailOptions.OTP)
+      mailOptions['html'] = templateManager.forgetPasswordTemplate(emailOptions.OTP)
   }
 
   else if (emailType === "confirmedResetEmail") {
     mailOptions['subject'] = emailOptions.subject,
-    mailOptions['html'] = templateManager.confirmResetPassword
+      mailOptions['html'] = templateManager.confirmResetPassword
   }
 
-  else if(emailType === "adminCredentials"){
+  else if (emailType === "accountCredentials") {
     mailOptions['subject'] = emailOptions.subject,
-    mailOptions['html'] = templateManager.adminCredentials(emailOptions.userName, emailOptions.password, emailOptions.phoneNumber)
+      mailOptions['html'] = templateManager.accountCredentials(emailOptions)
   }
 
   const result = await sendEmail(mailOptions);
@@ -37,7 +37,7 @@ exports.emailSetup = async(emailType, emailOptions) => {
 const sendEmail = async (mailOptions) => {
   try {
     const result = await transporter.sendMail(mailOptions);
-    
+
     return {
       success: true,
       statusCode: 200,
@@ -47,11 +47,11 @@ const sendEmail = async (mailOptions) => {
     };
   } catch (error) {
     return {
-        success: false,
-        statusCode: 500,
-        message: "Internal Server Error",
-        data: null,
-        error
+      success: false,
+      statusCode: 500,
+      message: "Internal Server Error",
+      data: null,
+      error
     };
   }
 }

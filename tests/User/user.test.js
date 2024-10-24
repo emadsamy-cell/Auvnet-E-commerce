@@ -1,12 +1,21 @@
 const supertest = require("supertest");
 const app = require("../../app");
 const { generateOTP } = require("../../helpers/otpManager");
+const tokenManager = require('../../helpers/tokenManager');
 const data = require('./user.temp.data');
 
 jest.mock("../../helpers/otpManager", () => ({
     generateOTP: jest.fn(),
 }));
 
+beforeAll(() => {
+    jest.setTimeout(10000);
+    data.adminToken = tokenManager.generateAccessToken({id: 1, role: 'admin'});
+    data.userToken = tokenManager.generateAccessToken({id: 2, role: 'user'});
+    data.vendorToken = tokenManager.generateAccessToken({id: 3, role: 'vendor'});
+});
+
+// Authentication
 describe("___User SignUp___", () => {
     it("should return status 201 when all credentials are valid", async () => {
         // Mock OTP generator 
@@ -200,6 +209,13 @@ describe("___Reset Password___", () => {
         expect(response.body.message).toBe("Password has been changed successfully");
     });
 
+    it("should return status 403 when trying to reset again", async () => { 
+        const response = await supertest(app).patch("/v1/user/auth/reset-password").send(data.validResetPasswordData);
+
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Unauthorized to preform this action");
+    });
+
     it("should return status 403 when OTP is not yet verified or expired", async () => {
         // request otp
         await supertest(app).post("/v1/user/auth/forget-password").send(data.validEmailAddress);
@@ -289,14 +305,16 @@ describe("___User SignIn___", () => {
     it("should return status 200 when sign in with correct user name and password", async () => {
         const response = await supertest(app).post("/v1/user/auth/signIn").send(data.validUserNameSignInData);
 
-        // save token for next test
+        // save data for next test
         data.validToken = response.body.data.token;
+        data.userID = response.body.data.user._id;
 
         expect(response.status).toBe(200); 
         expect(response.body.message).toBe("Login successfully"); 
     });
 });
 
+// Profile Management
 describe("___Get Profile___", () => {
     it("should return status 401 when token is missing", async () => {     
         const response = await supertest(app).get("/v1/user/profile/").send();
@@ -387,7 +405,6 @@ describe("___Update Profile___", () => {
     it("should return status 401 when token is missing", async () => {
         const response = await supertest(app).patch("/v1/user/profile/update")
         .send(data.validUpdateUserProfileData);
-        console.log(response.body)
 
         expect(response.status).toBe(401);
         expect(response.body.message).toBe("Invalid Authorization Token !");
@@ -413,7 +430,7 @@ describe("___Update Profile___", () => {
 describe("___Change Password___", () => {
     it("should return status 400 when invalid password length less than 8 characters", async () => {
         const response = await supertest(app).patch("/v1/user/profile/change-password").set("Authorization", `Bearer ${data.validToken}`)
-        .send(data.invalidCurrentPasswordChangePasswordData);
+        .send(data.invalidNewPasswordChangePasswordData);
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("error");
@@ -438,14 +455,6 @@ describe("___Change Password___", () => {
         expect(response.body.message).toBe("validation error");
     });
 
-    it("should return status 401 when incorrect current password", async () => {
-        const response = await supertest(app).patch("/v1/user/profile/change-password").set("Authorization", `Bearer ${data.validToken}`)
-        .send(data.incorrectCurrentPasswordChangePasswordData);
-
-        expect(response.status).toBe(401);
-        expect(response.body.message).toBe("Incorrect password");
-    });
-
     it("should return status 401 when token is missing", async () => {
         const response = await supertest(app).patch("/v1/user/profile/change-password")
         .send(data.validChangePasswordData);
@@ -468,5 +477,144 @@ describe("___Change Password___", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Password has been changed successfully");
+    });
+});
+
+// User Management
+describe("___List Users___", () => {
+    it("should return status 200 when Admin request", async () => {
+        const response = await supertest(app).get("/v1/user/list/").set("Authorization", `Bearer ${data.adminToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Users has been found!");
+    });
+
+    it("should return status 401 when token is missing", async () => {     
+        const response = await supertest(app).get("/v1/user/list/");
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 401 when token is invalid", async () => {
+        const response = await supertest(app).get("/v1/user/list/").set("Authorization", `Bearer ${data.inValidToken}`);
+    
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 403 when user send this request", async () => {
+        const response = await supertest(app).get("/v1/user/list/").set("Authorization", `Bearer ${data.userToken}`);
+    
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Not allowed to perform this action !");
+    });
+
+    it("should return status 403 when vendor send this request", async () => {
+        const response = await supertest(app).get("/v1/user/list/").set("Authorization", `Bearer ${data.vendorToken}`);
+    
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Not allowed to perform this action !");
+    });
+});
+
+describe("___Delete User___", () => {
+    it("should return status 204 when Admin request and User Found", async () => {
+        const response = await supertest(app).patch(`/v1/user/delete/${data.userID}`).set("Authorization", `Bearer ${data.adminToken}`).send();
+
+        expect(response.status).toBe(204);
+    });
+
+    it("should return status 401 when token is missing", async () => {     
+        const response = await supertest(app).patch(`/v1/user/delete/${data.userID}`);
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 401 when token is invalid", async () => {
+        const response = await supertest(app).patch(`/v1/user/delete/${data.userID}`).set("Authorization", `Bearer ${data.inValidToken}`);
+    
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 403 when user send this request", async () => {
+        const response = await supertest(app).patch(`/v1/user/delete/${data.userID}`).set("Authorization", `Bearer ${data.userToken}`);
+    
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Not allowed to perform this action !");
+    });
+
+    it("should return status 403 when vendor send this request", async () => {
+        const response = await supertest(app).patch(`/v1/user/delete/${data.userID}`).set("Authorization", `Bearer ${data.vendorToken}`);
+    
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Not allowed to perform this action !");
+    });
+
+    it("should return status 404 when User not found", async () => {
+        const response = await supertest(app).patch(`/v1/user/delete/${data.incorrectUserID}`).set("Authorization", `Bearer ${data.adminToken}`);
+    
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe( "User not found");
+    });
+
+    it("should return status 422 when User already deleted before", async () => {
+        const response = await supertest(app).patch(`/v1/user/delete/${data.userID}`).set("Authorization", `Bearer ${data.adminToken}`);
+    
+        expect(response.status).toBe(422);
+        expect(response.body.message).toBe("This user is deleted before");
+    });
+});
+
+describe("___Restore User___", () => {
+    it("should return status 200 when Admin request and User Found", async () => {
+        const response = await supertest(app).patch(`/v1/user/restore/${data.userID}`).set("Authorization", `Bearer ${data.adminToken}`).send();
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("User has been restored successfully");
+    });
+
+    it("should return status 401 when token is missing", async () => {     
+        const response = await supertest(app).patch(`/v1/user/restore/${data.userID}`);
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 401 when token is invalid", async () => {
+        const response = await supertest(app).patch(`/v1/user/restore/${data.userID}`).set("Authorization", `Bearer ${data.inValidToken}`);
+    
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 403 when user send this request", async () => {
+        const response = await supertest(app).patch(`/v1/user/restore/${data.userID}`).set("Authorization", `Bearer ${data.userToken}`);
+    
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Not allowed to perform this action !");
+    });
+
+    it("should return status 403 when vendor send this request", async () => {
+        const response = await supertest(app).patch(`/v1/user/restore/${data.userID}`).set("Authorization", `Bearer ${data.vendorToken}`);
+    
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Not allowed to perform this action !");
+    });
+
+    it("should return status 404 when User not found", async () => {
+        const response = await supertest(app).patch(`/v1/user/restore/${data.incorrectUserID}`).set("Authorization", `Bearer ${data.adminToken}`);
+    
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe( "User not found");
+    });
+
+    it("should return status 422 when User already restored before", async () => {
+        const response = await supertest(app).patch(`/v1/user/restore/${data.userID}`).set("Authorization", `Bearer ${data.adminToken}`);
+    
+        expect(response.status).toBe(422);
+        expect(response.body.message).toBe("This user isn't deleted");
     });
 });

@@ -1,8 +1,8 @@
 const supertest = require("supertest");
 const app = require("../../app");
 const { generateOTP } = require("../../helpers/otpManager");
-const { generateToken } = require("../../helpers/tokenManager");
-const { loginAdminDataWithInvalidUserName, loginAdminDataWithInvalidPassword, validAdminLoginData, notExistedAdminUserName, existedAdminUserName, knownAdminOTP, token } = require("../Data")
+const { generateAccessToken, generateRefreshToken } = require("../../helpers/tokenManager");
+const data = require("../Data")
 
 describe("___Admin Login___", () => {
   it("should return status 400 when admin logins with userName less than 3 letters", async () => {
@@ -28,7 +28,7 @@ describe("___Admin Login___", () => {
   });
 
   it("should return status 401 when admin logins with invalid userName", async () => {
-    const response = await supertest(app).post("/v1/admin/auth/signIn").send(loginAdminDataWithInvalidUserName);
+    const response = await supertest(app).post("/v1/admin/auth/signIn").send(data.loginAdminDataWithInvalidUserName);
 
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty("error");
@@ -36,7 +36,7 @@ describe("___Admin Login___", () => {
   });
 
   it("should return status 401 when admin logins with invalid password", async () => {
-    const response = await supertest(app).post("/v1/admin/auth/signIn").send(loginAdminDataWithInvalidPassword);
+    const response = await supertest(app).post("/v1/admin/auth/signIn").send(data.loginAdminDataWithInvalidPassword);
 
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty("error");
@@ -44,7 +44,7 @@ describe("___Admin Login___", () => {
   });
 
   it("should return status 200 when admin logins with valid credentials", async () => {
-    const response = await supertest(app).post("/v1/admin/auth/signIn").send(validAdminLoginData);
+    const response = await supertest(app).post("/v1/admin/auth/signIn").send(data.validAdminLoginData);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toEqual(true);
@@ -52,9 +52,9 @@ describe("___Admin Login___", () => {
 });
 
 describe("___Request OTP From Admin___", () => {
-  it("should return status 404 when admin requests OTP", async () => {
+  it("should return status 404 when admin requests OTP and userName not found", async () => {
     const response = await supertest(app).get("/v1/admin/auth/request-otp").send({
-      userName: notExistedAdminUserName,
+      userName: data.notExistedAdminUserName,
     });
 
     expect(response.status).toBe(404);
@@ -63,7 +63,7 @@ describe("___Request OTP From Admin___", () => {
 
   it("should return status 200 when admin requests OTP", async () => {
     const response = await supertest(app).get("/v1/admin/auth/request-otp").send({
-      userName: existedAdminUserName,
+      userName: data.existedAdminUserName,
     });
 
     expect(response.status).toBe(200);
@@ -76,17 +76,19 @@ jest.mock("../../helpers/otpManager", () => ({
   generateOTP: jest.fn(),
 }));
 jest.mock("../../helpers/tokenManager", () => ({
-  generateToken: jest.fn(),
+  generateAccessToken: jest.fn(),
+  generateRefreshToken: jest.fn(),
 }));
 
 describe("___Verify Admin OTP___", () => {
   //constants
-  const knownOTP = knownAdminOTP;
-  const userName = existedAdminUserName;
+  const knownOTP = data.knownAdminOTP;
+  const userName = data.existedAdminUserName;
 
   //mock functions
   generateOTP.mockImplementation(() => knownOTP);
-  generateToken.mockImplementation(() => token);
+  generateAccessToken.mockImplementation(() => data.token);
+  generateRefreshToken.mockImplementation(() => data.token);
 
   it("should return status 403 when admin enters invalid OTP", async () => {
     //request OTP with known value
@@ -96,7 +98,7 @@ describe("___Verify Admin OTP___", () => {
     //verify OTP
     const response = await supertest(app).post("/v1/admin/auth/verify-otp").send({
       userName,
-      OTP: "111111",
+      OTP: data.invalidOTP,
     });
     expect(response.status).toBe(403);
     expect(response.body.message).toBe("Invalid OTP or OTP is expired");
@@ -116,6 +118,6 @@ describe("___Verify Admin OTP___", () => {
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Login successfully");
     expect(response.body.data).toHaveProperty("token");
-    expect(response.body.data.token).toEqual(token);
+    expect(response.body.data.token).toEqual(data.token);
   });
 });

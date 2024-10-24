@@ -1,4 +1,4 @@
-const Vendor = require('./Vendor.model');
+const Vendor = require('./vendor.model');
 
 /*
     @params filter: object
@@ -8,11 +8,65 @@ const Vendor = require('./Vendor.model');
     @params select: string
 */
 
+exports.aggregation = async(pipeline) => {
+    try {
+        const result = await Vendor.aggregate(pipeline);
+
+        return {
+            success: true,
+            statusCode: 200,
+            message: "Vendors has been found!",
+            data: result,
+            error: null
+        };
+    } catch (error) {
+        return {
+            success: false,
+            statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
+            error
+        }
+    }
+}
+
+exports.getList = async (filter, select, populate, skip, limit, sort) => {
+    try {
+        const [vendors, vendorCount] = await Promise.all([
+            Vendor.find(filter).select(select).populate(populate).skip(skip).limit(limit).sort(sort),
+            Vendor.countDocuments(filter)
+        ]);
+
+        const totalPages = Math.ceil(vendorCount / limit);
+
+        return {
+            success: true,
+            statusCode: 200,
+            message: "Vendors has been found!",
+            data: {
+                total: vendorCount,
+                totalPages,
+                vendors,
+            },
+            error: null
+        };
+
+    } catch (error) {
+        return {
+            success: false,
+            statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
+            error
+        };
+    }
+}
+
 exports.findVendor = async (filter, select, populate) => {
     try {
         const vendor = await Vendor.findOne(filter).select(select).populate(populate);
 
-        if(vendor) {
+        if (vendor) {
             return {
                 success: true,
                 statusCode: 200,
@@ -53,6 +107,18 @@ exports.create = async (data) => {
             error: null
         };
     } catch (error) {
+        console.log(error)
+        if (error.code === 11000) {
+            // Duplicate key error (unique constraint violation)
+            const field = Object.keys(error.keyPattern)[0];
+            return {
+                success: false,
+                statusCode: 409,
+                message: `${field} already exists. Please choose a different one.`,
+                data: null,
+                error
+            }
+        }
         return {
             success: false,
             statusCode: 500,
@@ -66,7 +132,7 @@ exports.create = async (data) => {
 exports.updateVendor = async (filter, update, options) => {
     try {
         const result = await Vendor.updateOne(filter, update, options);
-        
+
         if (result.matchedCount === 1) {
             return {
                 success: true,
@@ -97,7 +163,7 @@ exports.updateVendor = async (filter, update, options) => {
 
 exports.deleteVendor = async (filter) => {
     try {
-        const result = await model.deleteOne(filter);
+        const result = await Vendor.deleteOne(filter);
 
         if (result.deletedCount === 0) {
             return {
@@ -157,3 +223,35 @@ exports.findAndUpdateVendor = async (filter, update, select, populate, options) 
         };
     }
 };
+
+exports.deleteVendors = async (filter) => {
+    try {
+        const result = await model.deleteMany(filter);
+
+        if (result.deletedCount === 0) {
+            return {
+                success: false,
+                statusCode: 404,
+                message: "Vendor not found",
+                data: null,
+                error: `There are no Vendor with this filter ${filter}!!`
+            }
+        } else {
+            return {
+                success: true,
+                statusCode: 204,
+                message: "Vendor successfully deleted",
+                data: null,
+                error: null
+            }
+        }
+    } catch (error) {
+        return {
+            success: false,
+            statusCode: 500,
+            message: "Internal Server Error",
+            data: null,
+            error
+        };
+    }
+}
