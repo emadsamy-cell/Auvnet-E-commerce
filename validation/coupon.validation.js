@@ -1,5 +1,5 @@
 const joi = require("joi");
-const { audienceLocation, discountType, status, usageLimit } = require("../enums/coupon")
+const { audienceLocation, discountType, status, usageLimit, couponType } = require("../enums/coupon")
 
 exports.createCoupon = {
     body: joi.object({
@@ -14,8 +14,8 @@ exports.createCoupon = {
             'any.required': 'Discount type is required.',
         }),
 
-        discountValue: joi.number().min(0).messages({
-            'number.min': 'Discount value must be greater than or equal to 0',
+        discountValue: joi.number().min(1).messages({
+            'number.min': 'Discount value must be greater than or equal to 1',
             'number.base': 'Discount value must be a number.',
         }),
 
@@ -181,6 +181,10 @@ exports.getCoupon = {
 
 exports.updateCoupon = {
     body: joi.object({
+        couponType: joi.string().valid(couponType.GLOBAL, couponType.TARGET).optional().messages({
+            'any.only': `Coupon type must be either ${couponType.GLOBAL} or ${couponType.TARGET}.`,
+            'string.base': 'Coupon type must be a string.',
+        }),
         code: joi.string().trim().alphanum().messages({
             'string.empty': "Coupon code can't be empty.",
             'string.alphanum': 'Coupon code must be alphanumeric.',
@@ -193,8 +197,8 @@ exports.updateCoupon = {
             'any.only': `Discount type must be either ${discountType.PURCHASE} or ${discountType.SHIPMENT}.`,
         }),
 
-        discountValue: joi.number().min(0).messages({
-            'number.min': 'Discount value must be greater than or equal to 0',
+        discountValue: joi.number().min(1).messages({
+            'number.min': 'Discount value must be greater than or equal to 1',
             'number.base': 'Discount value must be a number.',
         }),
 

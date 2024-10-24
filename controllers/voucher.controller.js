@@ -1,9 +1,9 @@
 const roles = require("../enums/roles");
 const voucherEnum = require("../enums/voucher");
-const voucherHelpers = require("../helpers/voucher");
 const { paginate } = require("../utils/pagination");
 const { asyncHandler } = require("../utils/asyncHandler");
 const { createResponse } = require("../utils/createResponse");
+const filterAndSelectManager = require("../helpers/filterAndSelectManager");
 const userRepo = require("../models/user/user.repo");
 
 const voucherRepo = require("../models/voucher/voucher.repo");
@@ -16,30 +16,32 @@ exports.create = asyncHandler(async (req, res) => {
 });
 
 exports.getAll = asyncHandler(async (req, res) => {
-    let result = null;
-
-    //If sender is user, return vouchers allocated for the user's location
-    if (req.user.role === roles.USER) {
-        result = await voucherHelpers.getVouchersForUser(req)
+    let user = null;
+    if(req.user.role === roles.USER) {
+        user = await userRepo.findUser({ _id: req.user._id }, "country region city coins");
     }
+    const voucherOptions = { ...req.query, role: req.user.role, userCountry: user?.data?.country, userRegion: user?.data?.region, userCity: user?.data?.city };
 
-    //If sender is admin, return all coupons
-    else {
-        result = await voucherHelpers.getVouchersForAdmin(req)
-    }
+    const { voucherFilter } = filterAndSelectManager.filterHandler(voucherOptions);
+    const { voucherSelect } = filterAndSelectManager.selectHandler(voucherOptions);
 
     const { page, size, sortBy, sortOrder } = req.query;
 
     const options = paginate(page, size);
     options["sort"] = { [sortBy]: sortOrder === "asc" ? 1 : -1 }
 
-    const vouchers = await voucherRepo.getList(result.voucherFilter, result.select, options);
+    const vouchers = await voucherRepo.getList(voucherFilter, voucherSelect, options);
     return res.status(200).json(createResponse(true, "Vouchers are found", 200, null, vouchers))
 });
 
 exports.getById = asyncHandler(async (req, res) => {
-    //filterBuilder function is used to build the filter based on the user role
-    const { voucherFilter } = await voucherHelpers.filterBuilder(req);
+    let user = null;
+    if(req.user.role === roles.USER) {
+        user = await userRepo.findUser({ _id: req.user._id }, "country region city coins");
+    }
+    const voucherOptions = { role: req.user.role, voucherId: req.params.id, userCountry: user?.data?.country, userRegion: user?.data?.region, userCity: user?.data?.city };
+
+    const { voucherFilter } = filterAndSelectManager.filterHandler(voucherOptions);
 
     const select = req.user.role === roles.USER ? "-usedBy -numberOfVouchers -createdBy -__v -isDeleted" : "-__v";
     const populate = req.user.role === roles.USER ?
@@ -75,9 +77,10 @@ exports.delete = asyncHandler(async (req, res) => {
 });
 
 exports.claim = asyncHandler(async (req, res) => {
-    //filterBuilder function is used to build the filter based on the user role
-    //Check that given voucher id is valid to the user based on: user's location, not deleted.
-    const { voucherFilter, user } = await voucherHelpers.filterBuilder(req);
+    const user = await userRepo.findUser({ _id: req.user._id }, "country region city voucherClaimed coins");
+    const voucherOptions = { role: req.user.role, voucherId: req.params.id, userCountry: user?.data?.country, userRegion: user?.data?.region, userCity: user?.data?.city };
+
+    const { voucherFilter } = filterAndSelectManager.filterHandler(voucherOptions);
 
     //Check if user isn't claiming a voucher now.
     if (user.data.voucherClaimed) {
@@ -102,9 +105,9 @@ exports.claim = asyncHandler(async (req, res) => {
         return res.status(400).json(createResponse(false, "Voucher is expired", 400))
     }
 
-    //If user has already claimed the voucher
+    //If user has already redeemed the voucher
     if (usedBy.length) {
-        return res.status(400).json(createResponse(false, "You have claimed this voucher before", 400))
+        return res.status(400).json(createResponse(false, "You have redeemed this voucher before", 400))
     }
 
     //If number of vouchers is zero

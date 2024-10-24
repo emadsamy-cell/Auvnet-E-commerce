@@ -61,7 +61,7 @@ describe('___ Create Voucher___', () => {
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty('message', "validation error");
-        expect(response.body.error[0]).toHaveProperty('message', 'Number of vouchers must be greater than or equal to 0.');
+        expect(response.body.error[0]).toHaveProperty('message', 'Number of vouchers must be greater than or equal to 1.');
     });
 
     //6. Test Case: Validation error should be returned if offer type is written with invalid format
@@ -522,7 +522,7 @@ describe('___Claim A Voucher___', () => {
         const response = await request(app)
             .post(`/v1/voucher/${data.notValidVoucherId}/claim`)
             .set('Authorization', `Bearer ${data.validUserToken}`);
-        
+
         expect(response.status).toBe(404);
         expect(response.body).toHaveProperty('message', 'Voucher not found');
     });
@@ -614,7 +614,7 @@ describe('___Claim A Voucher___', () => {
             .set('Authorization', `Bearer ${data.anotherUserToken}`);
 
         expect(response.status).toBe(400);
-        expect(response.body).toHaveProperty('message', 'You have claimed this voucher before');
+        expect(response.body).toHaveProperty('message', 'You have redeemed this voucher before');
     });
 });
 
@@ -799,7 +799,7 @@ describe('___Redeem A Voucher___', () => {
 
         expect(getResponse.status).toBe(200);
         expect(getResponse.body.data.numberOfVouchers).toBe(1);
-        expect(getResponse.body.data.usedBy[0]).toEqual(data.validUserId);
+        expect(getResponse.body.data.usedBy[0]._id).toEqual(data.validUserId);
 
         // Reset the voucher
         await request(app)

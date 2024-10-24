@@ -94,36 +94,36 @@ exports.validCouponId = this.globalCoupon;
 exports.deletedCouponId = "66fee10e0f9d64012c694f01";
 exports.randomCouponId = "66fedfe25a0f834d9fbe82fb";
 
-exports.expectedCouponCount = 31;
+exports.expectedCouponCount = 32;
 
 exports.couponBody = {
-        code: "newSummer23",
-        discountType: "purchase",
-        discountValue: 20,
-        expireAt: "2024-12-02",
-        couponUsage: {
-            type: "limited",
-            count: 100
-        },
-        userUsage: {
-            type: "limited",
-            count: 1
-        },
-        termsAndConditions: {
-            minPurchaseValue: 50,
-            maxDiscountLimit: 100,
-            audienceLocation: {
-                type: "country",
-                location: "egypt"
-            }
-        },
+    code: "newSummer23",
+    discountType: "purchase",
+    discountValue: 20,
+    expireAt: "2024-12-02",
+    couponUsage: {
+        type: "limited",
+        count: 100
     },
-//______________________________________________________________
+    userUsage: {
+        type: "limited",
+        count: 1
+    },
+    termsAndConditions: {
+        minPurchaseValue: 50,
+        maxDiscountLimit: 100,
+        audienceLocation: {
+            type: "country",
+            location: "egypt"
+        }
+    },
+},
+    //______________________________________________________________
 
 
 
-//_______________________ Products Data _________________________
-exports.deletedProductId = "6702b6f669aef4e8397b1974";
+    //_______________________ Products Data _________________________
+    exports.deletedProductId = "6702b6f669aef4e8397b1974";
 exports.unOwnedProduct = "6702a393ea24f11c340deee9";
 exports.productId = "6702a393ea24f11c340deefb";
 //______________________________________________________________
@@ -154,8 +154,8 @@ exports.voucherData = {
     }
 }
 
-exports.expectedVoucherCountForUser = 10;
-exports.expectedVoucherCountForAdmin = 12;
+exports.expectedVoucherCountForUser = 9;
+exports.expectedVoucherCountForAdmin = 11;
 
 exports.existVoucherCode = "SPOTIFY2024"
 

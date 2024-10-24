@@ -3,6 +3,7 @@ const couponEnum = require("../enums/coupon");
 const { paginate } = require("../utils/pagination");
 const { asyncHandler } = require("../utils/asyncHandler");
 const { createResponse } = require("../utils/createResponse")
+const filterAndSelectManager = require("../helpers/filterAndSelectManager");
 
 const userRepo = require("../models/user/user.repo");
 const couponRepo = require("../models/coupon/coupon.repo");
@@ -19,10 +20,7 @@ exports.create = asyncHandler(async (req, res) => {
         req.body.couponType = couponEnum.couponType.GLOBAL
     }
 
-    if(req.body.products){
-        //Remove duplicate products
-        req.body.products = [...new Set(req.body.products)]
-       
+    if (req.body.products) {
         const result = await couponHelpers.checkProductsOwnership(req);
         if (!result) {
             return res.status(400).json(createResponse(false, "One or more products are not found", 400))
@@ -31,14 +29,11 @@ exports.create = asyncHandler(async (req, res) => {
 
     //Check that the categories assigned are exist
     if (req.body.categories) {
-        //Remove duplicate products
-        req.body.products = [...new Set(req.body.products)];
-
         const result = await couponHelpers.checkCategoriesExistence(req);
         if (!result) {
             return res.status(400).json(createResponse(false, "One or more categories are not found", 400))
         }
-    }    
+    }
 
     userRole === roles.VENDOR ? req.body.vendor = req.user._id : req.body.admin = req.user._id;
     const result = await couponRepo.create(req.body);
@@ -46,45 +41,40 @@ exports.create = asyncHandler(async (req, res) => {
 });
 
 exports.getAll = asyncHandler(async (req, res) => {
-    let result = null;
-
-    //If sender is user, return global coupons and targeted coupons for the user's location
+    let user = null;
     if (req.user.role === roles.USER) {
-        result = await couponHelpers.getCouponsForUser(req)
+        user = await userRepo.findUser({ _id: req.user._id }, "country region city coins");
     }
-
-    //If sender is vendor, return coupons for the vendor's products
-    else if (req.user.role === roles.VENDOR) {
-        result = await couponHelpers.getCouponsForVendor(req)
-    }
-
-    //If sender is admin, return all coupons
-    else {
-        result = await couponHelpers.getCouponsForAdmin(req)
-    }
+    const couponOptions = { role: req.user.role, userId: req.user._id, userCountry: user?.data?.country, userRegion: user?.data?.region, userCity: user?.data?.city };
+    const { couponFilter } = filterAndSelectManager.filterHandler(couponOptions);
+    const { couponSelect } = filterAndSelectManager.selectHandler(couponOptions);
 
     const { page, size, sortBy, sortOrder } = req.query;
     const options = paginate(page, size);
     options["sort"] = { [sortBy]: sortOrder === "asc" ? 1 : -1 }
 
-    const coupons = await couponRepo.getList(result.couponFilter, result.select, options)
+    const coupons = await couponRepo.getList(couponFilter, couponSelect, options)
     return res.status(200).json(createResponse(true, "Coupons are found", 200, null, coupons))
 });
 
 exports.getById = asyncHandler(async (req, res) => {
-    //filterBuilder function is used to build the filter based on the user role
-    const filter = await couponHelpers.filterBuilder(req);
+    let user = null;
+    if (req.user.role === roles.USER) {
+        user = await userRepo.findUser({ _id: req.user._id }, "country region city couponClaimed coins");
+    }
+    const couponOptions = { role: req.user.role, couponId: req.params.id, userId: req.user._id, userCountry: user?.data?.country, userRegion: user?.data?.region, userCity: user?.data?.city };
+    const { couponFilter } = filterAndSelectManager.filterHandler(couponOptions);
 
-    const select = req.user.role === roles.USER ? "-used -vendor -admin -couponUsage -couponType -isDeleted -__v -updatedAt -createdAt" : "";
+    const select = req.user.role === roles.USER ? "-used -admin -couponUsage -couponType -isDeleted -updatedAt -createdAt" : "";
     const populate = [
-        { "path": "vendor", "select": "userName email primaryPhone" },
-        { "path": "admin", "select": "userName email phoneNumber" },
-        { "path": "products", "select": "name" },
-        { "path": "categories", "select": "name" }
+        { path: "vendor", select: "userName email primaryPhone" },
+        { path: "admin", select: "userName email phoneNumber" },
+        { path: "products", select: "name" },
+        { path: "categories", select: "name" }
     ]
 
     //Check if the coupon is exist
-    const coupon = await couponRepo.isExist(filter, select, populate);
+    const coupon = await couponRepo.isExist(couponFilter, select, populate);
     if (!coupon.success) {
         return res.status(coupon.statusCode).json(createResponse(coupon.success, coupon.message, coupon.statusCode, coupon.error))
     }
@@ -94,10 +84,15 @@ exports.getById = asyncHandler(async (req, res) => {
 
 exports.update = asyncHandler(async (req, res) => {
     if (req.body.termsAndConditions?.audienceLocation?.location) {
+        if (req.body.couponType === couponEnum.couponType.GLOBAL) {
+            return res.status(422).json(createResponse(false, "Coupon type can't be changed to GLOBAL with audienceLocation provided", 400))
+        }
         req.body.couponType = couponEnum.couponType.TARGET
     }
 
-    req.body.discountPercent? req.body.discountValue = null : req.body.discountPercent = null;
+    if (req.body.discountValue || req.body.discountPercent) {
+        req.body.discountPercent ? req.body.discountValue = null : req.body.discountPercent = null;
+    }
 
     if (req.body.couponUsage?.type === couponEnum.usageLimit.UNLIMITED) {
         req.body.couponUsage.count = null
@@ -107,10 +102,7 @@ exports.update = asyncHandler(async (req, res) => {
         req.body.userUsage.count = null
     }
 
-    if(req.body.products){
-        //Remove duplicate products
-        req.body.products = [...new Set(req.body.products)]
-       
+    if (req.body.products) {
         const result = await couponHelpers.checkProductsOwnership(req);
         if (!result) {
             return res.status(400).json(createResponse(false, "One or more products are not found", 400))
@@ -118,14 +110,11 @@ exports.update = asyncHandler(async (req, res) => {
     }
 
     if (req.body.categories) {
-        //Remove duplicate products
-        req.body.products = [...new Set(req.body.products)]
-
         const result = await couponHelpers.checkCategoriesExistence(req);
         if (!result) {
             return res.status(400).json(createResponse(false, "One or more categories are not found", 400))
         }
-    }    
+    }
 
     const filter = req.user.role === roles.VENDOR ?
         { _id: req.params.id, vendor: req.user._id } :
@@ -153,12 +142,13 @@ exports.delete = asyncHandler(async (req, res) => {
 });
 
 exports.claim = asyncHandler(async (req, res) => {
-    //filterBuilder function is used to build the filter based on the user role
-    //Check that given coupon id is valid to the user based on: user's location, not deleted.
-    const filter = await couponHelpers.filterBuilder(req);
+    const user = await userRepo.findUser({ _id: req.user._id }, "country region city couponClaimed coins");
+    const couponOptions = { role: req.user.role, couponId: req.params.id, userId: req.user._id, userCountry: user?.data?.country, userRegion: user?.data?.region, userCity: user?.data?.city };
+
+    const { couponFilter } = filterAndSelectManager.filterHandler(couponOptions);
 
     //Check if the coupon is exist
-    const coupon = await couponRepo.isExist(filter, { usedBy: { $elemMatch: { userId: req.user._id } }, expireAt: 1, couponUsage: 1, userUsage: 1, totalUsed: 1 } );
+    const coupon = await couponRepo.isExist(couponFilter, { usedBy: { $elemMatch: { userId: req.user._id } }, expireAt: 1, couponUsage: 1, userUsage: 1, totalUsed: 1 });
     if (!coupon.success) {
         return res.status(coupon.statusCode).json(createResponse(coupon.success, coupon.message, coupon.statusCode, coupon.error))
     }
@@ -177,7 +167,7 @@ exports.claim = asyncHandler(async (req, res) => {
 
     //If user has exceeded the user usage limit
     if (userUsage.type === couponEnum.usageLimit.LIMITED && usedBy.length && userUsage.count <= usedBy[0].count) {
-        return res.status(400).json(createResponse(false, "You have exceeded the user usage limit", 400))
+        return res.status(400).json(createResponse(false, "You have exceeded the user usage limit for this coupon", 400))
     }
 
     //Check if user isn't claiming a coupon now.
