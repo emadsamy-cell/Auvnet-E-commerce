@@ -294,7 +294,7 @@ describe('___ Read Coupons___', () => {
             const response = await request(app)
                 .get('/v1/coupon')
                 .set('Authorization', `Bearer ${data.validVendorToken}`);
-            console.log(response.body.data.coupons[0])
+
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('data');
             expect(Array.isArray(response.body.data.coupons)).toBe(true);
@@ -342,7 +342,7 @@ describe('___GET A COUPON___', () => {
             const res = await request(app)
                 .get(`/v1/coupon/${randomId}`)
                 .set('Authorization', `Bearer ${data.validUserToken}`);
-            console.log(res.body)
+
             expect(res.statusCode).toEqual(404);
             expect(res.body).toHaveProperty('message', 'Coupon not found');
         });
@@ -362,7 +362,7 @@ describe('___GET A COUPON___', () => {
             const res = await request(app)
                 .get(`/v1/coupon/${data.validUserTargetCoupon}`)
                 .set('Authorization', `Bearer ${data.validUserToken}`);
-            console.log(res.body)
+
             expect(res.statusCode).toEqual(200);
             expect(res.body).toHaveProperty('data');
             expect(res.body.data._id).toEqual(data.validUserTargetCoupon);

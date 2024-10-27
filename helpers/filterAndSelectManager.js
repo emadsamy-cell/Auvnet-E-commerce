@@ -70,7 +70,32 @@ exports.filterHandler = (options) => {
         } : {}),
     }
 
-    return { collectionFilter, productFilter, vendorFilter, voucherFilter, couponFilter };
+    const adFilter = {
+        ...(options.status ? { status: options.status } : {}),
+        ...(options.title ? { title: { $regex: options.title, $options: 'i' } } : {}), 
+
+        ...(options.role === roles.USER ? {
+            status: { $ne: 'expired' },
+            startDate: { $lte: new Date() },
+            $or: [
+                {
+                    targetAudience: {
+                        $elemMatch: {
+                            $or: [
+                                { type: couponEnum.audienceLocation.REGION, location: { $regex: new RegExp(options.userRegion, 'i') } },
+                                { type: couponEnum.audienceLocation.COUNTRY, location: { $regex: new RegExp(options.userCountry, 'i') } },
+                                { type: couponEnum.audienceLocation.CITY, location: { $regex: new RegExp(options.userCity, 'i') } }
+                            ]
+                        }
+                    }
+                },
+
+                { targetAudience: { $size: 0 } }
+            ]
+        } : {}),
+    }
+
+    return { collectionFilter, productFilter, vendorFilter, voucherFilter, couponFilter, adFilter };
 }
 
 exports.selectHandler = (options) => {
@@ -79,7 +104,8 @@ exports.selectHandler = (options) => {
     let vendorSelect = "_id name email profileImage coverImage primaryPhone secondaryPhone country city region gender";
     let categorySelect = "_id name";
     let voucherSelect = "code description offerType status expireAt";
-    let couponSelect = "couponType code discountType expireAt status"
+    let couponSelect = "couponType code discountType expireAt status";
+    let adSelect = "title description images linkURL video";
 
     if (options.role !== 'user') {
         productSelect += " isDeleted";
@@ -88,7 +114,8 @@ exports.selectHandler = (options) => {
         vendorSelect += " status isDeleted createdBy";
         voucherSelect += " isDeleted";
         couponSelect += " isDeleted vendor admin";
+        adSelect += " status startDate endDate createdBy targetAudience";
     }
 
-    return { collectionSelect, productSelect, vendorSelect, categorySelect, voucherSelect, couponSelect };
+    return { collectionSelect, productSelect, vendorSelect, categorySelect, voucherSelect, couponSelect, adSelect };
 }

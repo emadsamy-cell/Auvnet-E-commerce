@@ -7,6 +7,7 @@ const couponRouter = require("./coupon.router");
 const categoryRouter = require("./category.router");
 const voucherRouter = require("./voucher.router");
 const collectionRouter = require("./collection.router");
+const adRouter = require("./ad.router");
 
 router.use("/auth", authRouter)
 router.use("/admin", adminRouter);
@@ -16,5 +17,6 @@ router.use("/category", categoryRouter);
 router.use("/coupon", couponRouter);
 router.use("/voucher", voucherRouter);
 router.use("/collection", collectionRouter);
+router.use("/ad", adRouter);
 
 module.exports = router;

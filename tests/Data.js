@@ -172,3 +172,28 @@ exports.claimedVoucherId = "6707da54f63871996f18df65"
 exports.globalVoucherId = "6707ff612a2c367e5626a15c"
 exports.manyVouchersId = "670837393f1ddaf415f0bd08"
 //______________________________________________________________
+
+
+
+// ____________________ Ad Data _____________________________
+exports.invalidURI = "invalidURI";
+exports.invalidStartDate = new Date(Date.now() - 24 * 60 * 60 * 1000); 
+exports.expectedAdsForUser = 5
+exports.totalAds = 8
+exports.adId = ""
+exports.invalidAdId = "6707da54f63871996f18df65"
+exports.updateTitle = "Updated Title"
+exports.updateDescription = "Updated Description"
+exports.updatedStatus = "expired"
+exports.invalidStatus = "Expired"
+
+exports.adData = {
+    title: "Test Ad",
+    description: "This is a test ad description.",
+    startDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day in future
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days in future
+    linkURL: "https://example.com",
+    targetAudience: [
+        { type: "country", location: "Egypt" }
+    ]
+};

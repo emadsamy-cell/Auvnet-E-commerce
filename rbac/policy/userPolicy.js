@@ -24,17 +24,24 @@ const {
     REDEEM_VOUCHER
   } = require("../../endpoints/voucher.endpoints")
 
+// Collection Endpoints Policy
 const {
     GET_COLLECTION,
     LIKE_COLLECTION,
     DISLIKE_COLLECTION
 } = require('../../endpoints/collection.endpoints');
 
+// Vendor Endpoints Policy
 const {
     GET_VENDORS,
     LIKE_VENDOR,
     DISLIKE_VENDOR
 } = require('../../endpoints/vendor.endpoints');
+
+// Ad Endpoints Policy
+const {
+    GET_ADS,
+  } = require("../../endpoints/ad.endpoints");
 
 module.exports = [
     GET_USER,
@@ -57,5 +64,8 @@ module.exports = [
 
     GET_VENDORS,
     LIKE_VENDOR,
-    DISLIKE_VENDOR
+    DISLIKE_VENDOR,
+
+    GET_ADS,
+    
 ];
