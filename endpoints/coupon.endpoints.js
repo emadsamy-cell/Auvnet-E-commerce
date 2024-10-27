@@ -1,0 +1,15 @@
+const CREATE_COUPON = "coupon:CREATE_COUPON";
+const GET_COUPONS = "coupon:GET_COUPONS";
+const GET_COUPON = "coupon:GET_COUPON";
+const UPDATE_COUPON = "coupon:UPDATE_COUPON";
+const DELETE_COUPON = "coupon:DELETE_COUPON";
+const CLAIM_COUPON = "coupon:CLAIM_COUPON";
+
+module.exports = {
+    CREATE_COUPON,
+    GET_COUPONS,
+    GET_COUPON,
+    UPDATE_COUPON,
+    DELETE_COUPON,
+    CLAIM_COUPON
+};
