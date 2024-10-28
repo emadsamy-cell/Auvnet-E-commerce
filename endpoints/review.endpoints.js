@@ -1,0 +1,13 @@
+const GET_REVIEWS = 'review:GET_REVIEWS';
+const CREATE_REVIEW = 'review:CREATE_REVIEW';
+const UPDATE_REVIEW = 'review:UPDATE_REVIEW';
+const DELETE_REVIEW = 'review:DELETE_REVIEW';
+const CREATE_REPLY = 'review:CREATE_REPLY';
+
+module.exports = {
+    GET_REVIEWS,
+    CREATE_REVIEW,
+    CREATE_REPLY,
+    UPDATE_REVIEW,
+    DELETE_REVIEW,
+};

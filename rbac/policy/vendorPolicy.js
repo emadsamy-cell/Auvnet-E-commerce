@@ -4,6 +4,7 @@ const {
     UPDATE_VENDOR,
 } = require('../../endpoints/vendor.endpoints');
 
+// Coupon Endpoints Policy
 const {
     CREATE_COUPON,
     GET_COUPONS,
@@ -17,12 +18,19 @@ const {
     GET_CATEGORY,
 } = require('../../endpoints/category.endpoints');
 
+// Collection Endpoints Policy
 const {
     GET_COLLECTION,
     CREATE_COLLECTION,
     UPDATE_COLLECTION,
     DELETE_COLLECTION
 } = require('../../endpoints/collection.endpoints');
+
+// Review Endpoints Policy
+const {
+    GET_REVIEWS,
+    CREATE_REPLY,
+} = require('../../endpoints/review.endpoints');
 
 module.exports = [
     GET_VENDOR,
@@ -38,5 +46,8 @@ module.exports = [
     GET_COLLECTION,
     CREATE_COLLECTION,
     UPDATE_COLLECTION,
-    DELETE_COLLECTION
+    DELETE_COLLECTION,
+
+    GET_REVIEWS,
+    CREATE_REPLY,
 ];

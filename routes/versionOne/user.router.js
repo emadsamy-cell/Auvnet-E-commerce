@@ -6,7 +6,7 @@ const isAuth = require('../../middlewares/auth');
 const { uploadSingleFile } = require('../../middlewares/upload');
 const userController = require('../../controllers/user.controller');
 const { GET_USER, UPDATE_USER, LIST_USERS, DELETE_USER } = require('../../endpoints/user.endpoints');
-const { GET_VENDORS, LIKE_VENDOR, DISLIKE_VENDOR } = require('../../endpoints/vendor.endpoints');
+const { GET_LIKED_VENDORS, LIKE_VENDOR, DISLIKE_VENDOR } = require('../../endpoints/vendor.endpoints');
 const { LIKE_COLLECTION, DISLIKE_COLLECTION } = require('../../endpoints/collection.endpoints');
 
 // Authentication
@@ -28,7 +28,7 @@ router.route('/delete/:id').patch(isAuth(DELETE_USER), validation(schema.paramet
 router.route('/restore/:id').patch(isAuth(DELETE_USER), validation(schema.parameterID), userController.restoreUser);
 
 // Vendor Like Management
-router.route('/liked/vendors').get(isAuth(GET_VENDORS), userController.getLikedVendors);
+router.route('/liked/vendors').get(isAuth(GET_LIKED_VENDORS), userController.getLikedVendors);
 router.route('/like/vendor/:id').patch(isAuth(LIKE_VENDOR), validation(schema.parameterID), userController.likeVendor);
 router.route('/dislike/vendor/:id').patch(isAuth(DISLIKE_VENDOR), validation(schema.parameterID), userController.dislikeVendor);
 

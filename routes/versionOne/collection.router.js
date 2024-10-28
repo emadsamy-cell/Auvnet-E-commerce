@@ -14,7 +14,7 @@ router.route('/:collectionID/products').get(isAuth(GET_COLLECTION), validation(s
 router.route('/create').post(uploadSingleFile('image', 'banner'), validation(schema.createCollection), isAuth(CREATE_COLLECTION), collectionController.createCollection);
 // UPDATE
 router.route('/update/:collectionID').patch(uploadSingleFile('image', 'banner'), isAuth(UPDATE_COLLECTION), validation(schema.updateCollection), collectionController.updateCollection);
-router.route('/add-products').patch(isAuth(UPDATE_COLLECTION), validation(schema.addProducts), collectionController.addProducts);
+router.route('/add-products/:collectionID').patch(isAuth(UPDATE_COLLECTION), validation(schema.addProducts), collectionController.addProducts);
 router.route('/remove-products/:collectionID').patch(isAuth(UPDATE_COLLECTION), validation(schema.removeProducts), collectionController.removeProducts);
 // DELETE
 router.route('/delete/:collectionID').patch(isAuth(DELETE_COLLECTION), validation(schema.deleteCollection), collectionController.deleteCollection);

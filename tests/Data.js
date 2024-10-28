@@ -94,6 +94,38 @@ exports.validCouponId = this.globalCoupon;
 exports.deletedCouponId = "66fee10e0f9d64012c694f01";
 exports.randomCouponId = "66fedfe25a0f834d9fbe82fb";
 
+<<<<<<< HEAD
+exports.expectedCouponCount = 31;
+
+exports.couponBody = {
+        code: "newSummer23",
+        discountType: "purchase",
+        discountValue: 20,
+        expireAt: "2024-12-02",
+        couponUsage: {
+            type: "limited",
+            count: 100
+        },
+        userUsage: {
+            type: "limited",
+            count: 1
+        },
+        termsAndConditions: {
+            minPurchaseValue: 50,
+            maxDiscountLimit: 100,
+            audienceLocation: {
+                type: "country",
+                location: "egypt"
+            }
+        },
+    },
+//______________________________________________________________
+
+
+
+//_______________________ Products Data _________________________
+exports.deletedProductId = "6702b6f669aef4e8397b1974";
+=======
 exports.expectedCouponCount = 32;
 
 exports.couponBody = {
@@ -124,6 +156,7 @@ exports.couponBody = {
 
     //_______________________ Products Data _________________________
     exports.deletedProductId = "6702b6f669aef4e8397b1974";
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 exports.unOwnedProduct = "6702a393ea24f11c340deee9";
 exports.productId = "6702a393ea24f11c340deefb";
 //______________________________________________________________
@@ -154,8 +187,13 @@ exports.voucherData = {
     }
 }
 
+<<<<<<< HEAD
+exports.expectedVoucherCountForUser = 10;
+exports.expectedVoucherCountForAdmin = 12;
+=======
 exports.expectedVoucherCountForUser = 9;
 exports.expectedVoucherCountForAdmin = 11;
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
 exports.existVoucherCode = "SPOTIFY2024"
 
@@ -171,4 +209,33 @@ exports.notEnoughCoinsVoucherId = "6706b528acca6ee86baedfbb"
 exports.claimedVoucherId = "6707da54f63871996f18df65"
 exports.globalVoucherId = "6707ff612a2c367e5626a15c"
 exports.manyVouchersId = "670837393f1ddaf415f0bd08"
+<<<<<<< HEAD
 //______________________________________________________________
+=======
+//______________________________________________________________
+
+
+
+// ____________________ Ad Data _____________________________
+exports.invalidURI = "invalidURI";
+exports.invalidStartDate = new Date(Date.now() - 24 * 60 * 60 * 1000); 
+exports.expectedAdsForUser = 5
+exports.totalAds = 8
+exports.adId = ""
+exports.invalidAdId = "6707da54f63871996f18df65"
+exports.updateTitle = "Updated Title"
+exports.updateDescription = "Updated Description"
+exports.updatedStatus = "expired"
+exports.invalidStatus = "Expired"
+
+exports.adData = {
+    title: "Test Ad",
+    description: "This is a test ad description.",
+    startDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day in future
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days in future
+    linkURL: "https://example.com",
+    targetAudience: [
+        { type: "country", location: "Egypt" }
+    ]
+};
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9

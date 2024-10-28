@@ -72,6 +72,15 @@ exports.deleteCategory = {
         id: Joi.string()
         .min(24)
         .max(24)
+<<<<<<< HEAD
+        .messages({
+            'string.base': 'Id must be a type of text',
+            'string.empty': 'Id cannot be empty',
+            'string.min': 'Id should have at least 24 characters',
+            'string.max': 'Id should have at most 24 characters',
+        }),
+=======
         .message('Id must be a valid 24-character hex string (MongoDB ObjectId).'),
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     }),
 };

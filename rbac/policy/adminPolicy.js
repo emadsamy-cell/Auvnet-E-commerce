@@ -50,6 +50,11 @@ const {
     DELETE_COLLECTION
 } = require('../../endpoints/collection.endpoints');
 
+const {
+    GET_REVIEWS,
+    DELETE_REVIEW
+} = require('../../endpoints/review.endpoints');
+
 module.exports = [
     GET_PROFILE,
     UPDATE_PROFILE,
@@ -81,4 +86,6 @@ module.exports = [
     UPDATE_VOUCHER,
     DELETE_VOUCHER,
 
+    GET_REVIEWS,
+    DELETE_REVIEW,
 ]

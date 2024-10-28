@@ -27,9 +27,8 @@ exports.setLimit = (numberOfFiles, fileSize) => {
 exports.handleMultipleFields = (files, allowedTypes) => {
     let types = [];
     let numberOfFiles = 0;
-
     let fields = files.map(file => {
-        types = types.concat(allowedTypes[file.type]);
+        types = file.name == "images"? types.concat(allowedTypes['image']) : types.concat(allowedTypes[file.name]);
         numberOfFiles += file.maxCount;
         return { name: file.name, maxCount: file.maxCount };
     });

@@ -3,6 +3,11 @@ const app = require("../../app");
 const data = require('./collection.data')
 const tokenManager = require('../../helpers/tokenManager');
 const path = require('path');
+<<<<<<< HEAD
+const { visibility } = require('../../enums/collection');
+const roles = require('../../enums/roles')
+=======
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
 beforeAll(async () => {
     jest.setTimeout(() => {}, 10000);
@@ -13,6 +18,11 @@ beforeAll(async () => {
     data.tempVendorToken = tokenManager.generateAccessToken({_id: data.tempVendorID, role: "vendor"});
 });
 
+<<<<<<< HEAD
+const validateCollectionsOwnerShip =  (collections, role, vendorID) => {
+    collections.forEach(collection => {
+        if(role === roles.VENDOR && collection.vendor) {
+=======
 const validateCollections =  (collections, role, vendorID) => {
     collections.forEach(collection => {
         if (role === 'user') {
@@ -26,19 +36,61 @@ const validateCollections =  (collections, role, vendorID) => {
         }
 
         if(role === 'vendor') {
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
             expect(collection.vendor._id).toBe(vendorID);
         }
     });
 }
 
+<<<<<<< HEAD
+const validateProducts = (options, products, role) => {
+    products.forEach(product => {
+        let isValidProductWithFilter = (options.availability || options.minPrice || options.maxPrice ? false : true)
+        product.productDetails.forEach(variant => {
+            let isAvailable = variant.quantity > 0 ? true : false;
+            let isMinPrice = variant.price * 1 >= options.minPrice * 1 ? true : false;
+            let isMaxPrice = variant.price * 1 >= options.maxPrice * 1 ? true : false;
+            if ((!options.availability || isAvailable) && (!options.minPrice || isMinPrice) && (!options.maxPrice || isMaxPrice)) {
+                isValidProductWithFilter = true;
+            } 
+        })
+        
+        if (!isValidProductWithFilter) {
+            expect(isValidProductWithFilter).toBe(true);
+        }
+
+        if (options.category) {
+            expect(product.category._id).toBe(options.category);
+        }
+
+        if (options.name) {
+            let regex = new RegExp(options.name, 'i');
+            expect(product.name).toMatch(regex)
+        }
+
+        if (role === roles.USER && product.isRestored) {
+            expect(product.isRestored).toBe(false);
+        }
+    })
+}
+
+=======
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 // Collection Crud Operations
 describe("___Get Collections___", () => {
     // validation [page, size, vendor]
     // auth [user, vendor, admin, superAdmin]
+<<<<<<< HEAD
+    // vendor only see his collections [public, hidden and Restored]
+    // admin see all collections [public, hidden, notRestored and Restored]
+    // users can see all collections [public and notRestored]
+    // superAdmin can see all collections [public, hidden, Restored, notRestored]
+=======
     // vendor only see his collections [public, hidden and deleted]
     // admin see all collections [public, hidden, notDeleted and deleted]
     // users can see all collections [public and notDeleted]
     // superAdmin can see all collections [public, hidden, deleted, notDeleted]
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     // when vendor is provided should return all collection for that vendor
     
     // Validation
@@ -104,7 +156,11 @@ describe("___Get Collections___", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("collections has been found!");
+<<<<<<< HEAD
+        validateCollectionsOwnerShip(response.body.data.collections, roles.VENDOR, data.tempVendorID);
+=======
         validateCollections(response.body.data.collections, 'vendor', data.tempVendorID);
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     });
 
     it("should return status 200 with only collection belongs to that vendor", async () => {
@@ -116,7 +172,11 @@ describe("___Get Collections___", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("collections has been found!");
+<<<<<<< HEAD
+        validateCollectionsOwnerShip(response.body.data.collections, roles.VENDOR, data.vendorID);
+=======
         validateCollections(response.body.data.collections, 'vendor', data.vendorID);
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     });
 
 
@@ -129,7 +189,10 @@ describe("___Get Collections___", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("collections has been found!");
+<<<<<<< HEAD
+=======
         validateCollections(response.body.data.collections, 'user');
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     });
 
     it("should return status 200 with all collection to specific vendor that public and its vendor available", async () => {
@@ -140,7 +203,10 @@ describe("___Get Collections___", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("collections has been found!");
+<<<<<<< HEAD
+=======
         validateCollections(response.body.data.collections, 'user');
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     });
 
     // when request from admin
@@ -152,11 +218,18 @@ describe("___Get Collections___", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("collections has been found!");
+<<<<<<< HEAD
+    });
+
+    // When request from super admin
+    it("should return status 200 with all collection to specific vendor (Restored or not) that public and hidden", async () => {
+=======
         validateCollections(response.body.data.collections, 'admin');
     });
 
     // When request from super admin
     it("should return status 200 with all collection to specific vendor (deleted or not) that public and hidden", async () => {
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         const response = await supertest(app)
         .get("/v1/collection/all")
         .set("Authorization", `Bearer ${data.superAdminToken}`)
@@ -164,7 +237,288 @@ describe("___Get Collections___", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("collections has been found!");
+<<<<<<< HEAD
+    });
+});
+
+describe("___Get Products Collection___", () => {
+    // Validation [name, availability, category, maxPrice, minPrice]
+    // params [collectionID]
+    // Auth [user, vendor, admin or superAdmin]
+    it("should return status 400 when name in parameter is invalid", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.inValidName);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toBe("validation error");
+    });
+
+    it("should return status 400 when availability in parameter is invalid", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.inValidAvailability);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toBe("validation error");
+    });
+
+    it("should return status 400 when category in parameter is invalid", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.inValidCategory);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toBe("validation error");
+    });
+
+    it("should return status 400 when maxPrice in parameter is invalid", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.inValidMaxPrice);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toBe("validation error");
+    });
+
+    it("should return status 400 when minPrice in parameter is invalid", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.inValidMinPrice);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toBe("validation error");
+    });
+
+    it("should return status 400 when collectionID in url is invalid", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.invalidCollectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toBe("validation error");
+    });
+
+    // Auth
+    it("should return status 401 when Token is missing", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 401 when Token is invalid", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.inValidToken}`)
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    // Not Found
+    it("should return status 404 when collection not found", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.inCorrectCollectionID}/products`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Collection not found");
+    });
+
+    // Vendor Request
+    // vendor can see only his collections (public, hidden, Restored) and filter its products (Restored or not)
+    it("should return status 403 When not the owner trying to view the collection", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.tempVendorToken}`)
+
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('You are not authorized to view this collection');
+    });
+
+    it("should return status 200 when the collection belongs to that vendor", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+        .query(data.validAvailabilityFilter)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        expect(response.body.data.vendor).toBe(data.vendorID);
+    });
+
+    it("should return status 200 when the collection belongs to that vendor and collection is hidden", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.hiddenCollectionID}/products`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        expect(response.body.data.vendor).toBe(data.vendorID);
+    });
+
+    it("should return status 200 when the collection belongs to that vendor and collection is Restored", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.hiddenCollectionID}/products`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        expect(response.body.data.vendor).toBe(data.vendorID);
+    });
+
+
+    // when request from user
+    // user can see any collection (public) and filter its products (not Restored ones)
+    it("should return status 404 when collection is hidden", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.hiddenCollectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Collection not found");
+    });
+
+    it("should return status 404 when collection is deleted", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.deletedCollectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Collection not found");
+    });
+
+    it("should return status 200 when collection is public", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+    });
+
+    it("should return status 200 with all products available", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.validAvailabilityFilter)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        validateProducts(data.validAvailabilityFilter, response.body.data.products, roles.USER);
+    });
+
+    it("should return status 200 with all products with specific category", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.validCategoryFilter)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        validateProducts(data.validCategoryFilter, response.body.data.products, roles.USER);
+    });
+
+    it("should return status 200 with all products with similar name", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.validNameFilter)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        validateProducts(data.validNameFilter, response.body.data.products, roles.USER);
+    });
+
+    it("should return status 200 with all products with minimum price", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.validMinPriceFilter)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        validateProducts(data.validMinPriceFilter, response.body.data.products, roles.USER);
+    });
+
+    it("should return status 200 with all products with maximum price", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.validMaxPriceFilter)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        validateProducts(data.validMaxPriceFilter, response.body.data.products, roles.USER);
+    });
+
+    it("should return status 200 with all products with minimum price and available", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.validMinPriceAvailabilityFilter)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        validateProducts(data.validMinPriceAvailabilityFilter, response.body.data.products, roles.USER);
+    });
+
+    it("should return status 200 with empty product list when minimum price is greater than maximum price", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+        .query(data.emptyProductsFilter)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+        expect(response.body.data.products.length).toBe(0)
+    });
+
+    // when request from admin
+    // admin or super admin can see all collections (public, hidden, deleted) and filter it products (deleted or not)
+    it("should return status 200 when collection is hidden", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.hiddenCollectionID}/products`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+    });
+
+    it("should return status 200 when collection is deleted", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.deletedCollectionID}/products`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+    });
+
+    it("should return status 200 when collection is public", async () => {
+        const response = await supertest(app)
+        .get(`/v1/collection/${data.collectionID}/products`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Collection has been found!');
+=======
         validateCollections(response.body.data.collections, 'admin');
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     });
 });
 
@@ -416,7 +770,11 @@ describe("__Update Collection___", () => {
         .set('Content-Type', 'multipart/form-data')
         .attach('banner', path.join(__dirname, '../../test.png'))
         .field('name', 'Test Collection')
+<<<<<<< HEAD
+        .field('visibility', visibility.PUBLIC)
+=======
         .field('visibility', 'public')
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
         expect(response.status).toBe(200);
         expect(response.body.message).toBe("Collection has been updated successfully");
@@ -425,10 +783,17 @@ describe("__Update Collection___", () => {
 
 describe("__Add Products___", () => {
    // validation [collections, products]
+<<<<<<< HEAD
+    it("should return status 400 when Collection is invalid", async () => {
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.invalidCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+        .send(data.validAddProducts)
+=======
     it("should return status 400 when collections are invalid", async () => {
         const response = await supertest(app).patch(`/v1/collection/add-products`)
         .set("Authorization", `Bearer ${data.vendorToken}`)
         .send(data.invalidAddProductsCollection)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
         expect(response.status).toBe(400);
         expect(response.body).toHaveProperty("error");
@@ -436,7 +801,11 @@ describe("__Add Products___", () => {
     });
 
     it("should return status 400 when products are invalid", async () => {
+<<<<<<< HEAD
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+=======
         const response = await supertest(app).patch(`/v1/collection/add-products`)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         .set("Authorization", `Bearer ${data.vendorToken}`)
         .send(data.invalidAddProducts)
 
@@ -447,7 +816,11 @@ describe("__Add Products___", () => {
 
     // Auth
     it("should return status 401 when Token is missing", async () => {
+<<<<<<< HEAD
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+=======
         const response = await supertest(app).patch(`/v1/collection/add-products`)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         .send(data.validAddProducts)
 
         expect(response.status).toBe(401);
@@ -455,7 +828,11 @@ describe("__Add Products___", () => {
     });
 
     it("should return status 401 when Token is invalid", async () => {
+<<<<<<< HEAD
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+=======
         const response = await supertest(app).patch(`/v1/collection/add-products`)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         .set("Authorization", `Bearer ${data.inValidToken}`)
         .send(data.validAddProducts)
 
@@ -463,8 +840,13 @@ describe("__Add Products___", () => {
         expect(response.body.message).toBe("Invalid Authorization Token !");
     });
 
+<<<<<<< HEAD
+    it("should return status 403 when User trying to Remove Products to collection", async () => {
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+=======
     it("should return status 403 when User trying to Add Products to collection", async () => {
         const response = await supertest(app).patch(`/v1/collection/add-products`)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         .set("Authorization", `Bearer ${data.userToken}`)
         .send(data.validAddProducts)
 
@@ -472,8 +854,13 @@ describe("__Add Products___", () => {
         expect(response.body.message).toBe("Not allowed to perform this action !");
     });
 
+<<<<<<< HEAD
+    it("should return status 403 when Admin trying to Remove Products to collection", async () => {
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+=======
     it("should return status 403 when Admin trying to Add Products to collection", async () => {
         const response = await supertest(app).patch(`/v1/collection/add-products`)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         .set("Authorization", `Bearer ${data.adminToken}`)
         .send(data.validAddProducts)
 
@@ -481,8 +868,13 @@ describe("__Add Products___", () => {
         expect(response.body.message).toBe("Not allowed to perform this action !");
     });
 
+<<<<<<< HEAD
+    it("should return status 403 when super admin trying to Remove Products to collection", async () => {
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+=======
     it("should return status 403 when super admin trying to Add Products to collection", async () => {
         const response = await supertest(app).patch(`/v1/collection/add-products`)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         .set("Authorization", `Bearer ${data.superAdminToken}`)
         .send(data.validAddProducts)
 
@@ -490,6 +882,21 @@ describe("__Add Products___", () => {
         expect(response.body.message).toBe("Not allowed to perform this action !");
     });
 
+<<<<<<< HEAD
+    it("should return status 404 when not the owner of collection trying to Remove Products", async () => {
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.inCorrectCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+        .send(data.validAddProducts)
+        
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Collection not found");
+    });
+
+    it("should return status 404 when not the owner of products trying to Remove his collection", async () => {
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+        .send(data.tempAddProducts)
+=======
     it("should return status 404 when not the owner of collection trying to Add Products", async () => {
         const response = await supertest(app).patch(`/v1/collection/add-products`)
         .set("Authorization", `Bearer ${data.vendorToken}`)
@@ -503,11 +910,25 @@ describe("__Add Products___", () => {
         const response = await supertest(app).patch(`/v1/collection/add-products`)
         .set("Authorization", `Bearer ${data.tempVendorToken}`)
         .send(data.validAddProducts)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
         expect(response.status).toBe(404);
         expect(response.body.message).toBe("Products not found or delete.");
     });
 
+<<<<<<< HEAD
+    it("should return status 404 when collection is deleted", async () => {
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+        .send(data.validAddProducts)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('This collection is deleted!');
+    });
+
+    it("should return status 404 when one or more product is deleted", async () => {
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+=======
     it("should return status 404 when one or more collection is deleted", async () => {
         const response = await supertest(app).patch(`/v1/collection/add-products`)
         .set("Authorization", `Bearer ${data.vendorToken}`)
@@ -519,6 +940,7 @@ describe("__Add Products___", () => {
 
     it("should return status 404 when one or more product is deleted", async () => {
         const response = await supertest(app).patch(`/v1/collection/add-products`)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         .set("Authorization", `Bearer ${data.vendorToken}`)
         .send(data.deletedProductsAddProducts)
 
@@ -527,7 +949,11 @@ describe("__Add Products___", () => {
     });
 
     it("should return status 200 when the owner update existing collection", async () => {
+<<<<<<< HEAD
+        const response = await supertest(app).patch(`/v1/collection/add-products/${data.collectionID}`)
+=======
         const response = await supertest(app).patch(`/v1/collection/add-products`)
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         .set("Authorization", `Bearer ${data.vendorToken}`)
         .send(data.validAddProducts)
 
@@ -612,6 +1038,8 @@ describe("__Remove Products___", () => {
         expect(response.body.message).toBe("Collection not found");
     });
 
+<<<<<<< HEAD
+=======
     it("should return status 404 when not the owner of products trying to Remove his collection", async () => {
         const response = await supertest(app).patch(`/v1/collection/remove-products/${data.collectionID}`)
         .set("Authorization", `Bearer ${data.vendorToken}`)
@@ -621,6 +1049,7 @@ describe("__Remove Products___", () => {
         expect(response.body.message).toBe("Products not found or delete.");
     });
 
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     it("should return status 404 when collection is deleted", async () => {
         const response = await supertest(app).patch(`/v1/collection/remove-products/${data.deletedCollectionID}`)
         .set("Authorization", `Bearer ${data.vendorToken}`)
@@ -630,6 +1059,8 @@ describe("__Remove Products___", () => {
         expect(response.body.message).toBe('This collection is deleted!');
     });
 
+<<<<<<< HEAD
+=======
     it("should return status 404 when one or more product is deleted", async () => {
         const response = await supertest(app).patch(`/v1/collection/remove-products/${data.collectionID}`)
         .set("Authorization", `Bearer ${data.vendorToken}`)
@@ -639,6 +1070,7 @@ describe("__Remove Products___", () => {
         expect(response.body.message).toBe("Products not found or delete.");
     });
 
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     it("should return status 200 when the owner update existing collection", async () => {
         const response = await supertest(app).patch(`/v1/collection/remove-products/${data.collectionID}`)
         .set("Authorization", `Bearer ${data.vendorToken}`)
@@ -649,4 +1081,268 @@ describe("__Remove Products___", () => {
     });
 });
 
+<<<<<<< HEAD
+describe("___Delete Collection___", () => {
+    // params [collectionID]
+    // Auth [user, vendor, admin or superAdmin]
+    it("should return status 400 when collectionID in url is invalid", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.invalidCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`);
 
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toBe("validation error");
+    });
+
+    // Auth
+    it("should return status 401 when Token is missing", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.collectionID}`)
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 401 when Token is invalid", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.inValidToken}`)
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    // Vendor Request
+    // vendor delete only his collections (public, hidden)
+    it("should return status 403 When not the owner trying to delete the collection", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.tempVendorToken}`)
+
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('You are not authorized to delete this collection');
+    });
+
+    it("should return status 404 when collection Not Found", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.inCorrectCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Collection not found");
+    });
+
+    it("should return status 404 when collection already deleted", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('This collection is already deleted!');
+    });
+
+    it("should return status 200 when the collection belongs to that vendor and its public", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Collection has been deleted successfully");
+    
+        await supertest(app)
+        .patch(`/v1/collection/restore/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+    });
+
+    it("should return status 200 when the collection belongs to that vendor and its hidden", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.hiddenCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Collection has been deleted successfully");
+    
+        await supertest(app)
+        .patch(`/v1/collection/restore/${data.hiddenCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+    });
+
+    // when request from user
+    // Not Allowed To Delete any collection
+    it("should return status 403 when User trying to delete collection", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Not allowed to perform this action !");
+    });
+
+    // when request from admin
+    // admin or super admin can delete all collections (public, hidden)
+    it("should return status 404 when collection Not Found", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.inCorrectCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Collection not found");
+    });
+
+    it("should return status 404 when collection already deleted", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('This collection is already deleted!');
+    });
+
+    it("should return status 200 when collection is hidden", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.hiddenCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Collection has been deleted successfully");
+    
+        await supertest(app)
+        .patch(`/v1/collection/restore/${data.hiddenCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+    });
+
+    it("should return status 200 when collection is public", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/delete/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Collection has been deleted successfully");
+    
+        await supertest(app)
+        .patch(`/v1/collection/restore/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+    });
+});
+
+describe("___Restore Collection___", () => {
+    // params [collectionID]
+    // Auth [user, vendor, admin or superAdmin]
+    it("should return status 400 when collectionID in url is invalid", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.invalidCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error");
+        expect(response.body.message).toBe("validation error");
+    });
+
+    // Auth
+    it("should return status 401 when Token is missing", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.collectionID}`)
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    it("should return status 401 when Token is invalid", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.inValidToken}`)
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe("Invalid Authorization Token !");
+    });
+
+    // Vendor Request
+    // vendor delete only his collections (public, hidden)
+    it("should return status 403 When not the owner trying to delete the collection", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.tempVendorToken}`)
+
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe('You are not authorized to restore this collection');
+    });
+
+    it("should return status 404 when collection Not Found", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.inCorrectCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Collection not found");
+    });
+
+    it("should return status 404 when collection not deleted", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('This collection is not deleted!');
+    });
+
+    it("should return status 200 when the collection belongs to that vendor", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Collection has been restored successfully");
+    
+        await supertest(app)
+        .patch(`/v1/collection/delete/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.vendorToken}`)
+    });
+
+    // when request from user
+    // Not Allowed To Delete any collection
+    it("should return status 403 when User trying to delete collection", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.userToken}`)
+
+        expect(response.status).toBe(403);
+        expect(response.body.message).toBe("Not allowed to perform this action !");
+    });
+
+    // when request from admin
+    // admin or super admin can delete all collections (public, hidden)
+    it("should return status 404 when collection Not Found", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.inCorrectCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Collection not found");
+    });
+
+    it("should return status 404 when collection not deleted", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.collectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('This collection is not deleted!');
+    });
+
+    it("should return status 200 when collection is deleted", async () => {
+        const response = await supertest(app)
+        .patch(`/v1/collection/restore/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe("Collection has been restored successfully");
+    
+        await supertest(app)
+        .patch(`/v1/collection/delete/${data.deletedCollectionID}`)
+        .set("Authorization", `Bearer ${data.adminToken}`)
+    });
+});
+=======
+
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9

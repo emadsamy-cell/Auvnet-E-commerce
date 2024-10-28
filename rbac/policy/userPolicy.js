@@ -24,6 +24,7 @@ const {
     REDEEM_VOUCHER
   } = require("../../endpoints/voucher.endpoints")
 
+// Collection Endpoints Policy
 const {
     GET_COLLECTION,
     LIKE_COLLECTION,
@@ -32,9 +33,18 @@ const {
 
 const {
     GET_VENDORS,
+    GET_LIKED_VENDORS,
     LIKE_VENDOR,
     DISLIKE_VENDOR
 } = require('../../endpoints/vendor.endpoints');
+
+const {
+    GET_REVIEWS,
+    CREATE_REPLY,
+    CREATE_REVIEW,
+    UPDATE_REVIEW,
+    DELETE_REVIEW
+} = require('../../endpoints/review.endpoints');
 
 module.exports = [
     GET_USER,
@@ -48,6 +58,7 @@ module.exports = [
 
     GET_VOUCHERS,
     GET_VOUCHER,
+    GET_LIKED_VENDORS,
     CLAIM_VOUCHER,
     REDEEM_VOUCHER,
 
@@ -57,5 +68,13 @@ module.exports = [
 
     GET_VENDORS,
     LIKE_VENDOR,
-    DISLIKE_VENDOR
+    DISLIKE_VENDOR,
+
+    GET_REVIEWS,
+    CREATE_REPLY,
+    CREATE_REVIEW,
+    UPDATE_REVIEW,
+    DELETE_REVIEW,
+
+    GET_ADS,
 ];

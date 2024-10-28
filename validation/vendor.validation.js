@@ -1,4 +1,8 @@
 const Joi = require('joi');
+<<<<<<< HEAD
+const { status } = require('../enums/vendor')
+=======
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
 // Define the validation schema
 exports.vendorSignIn = {
@@ -229,7 +233,11 @@ exports.getVendors = {
     isDeleted: Joi.boolean().messages({
       'boolean.base': 'isDeleted should be a type of boolean',
     }),
+<<<<<<< HEAD
+    status: Joi.string().valid(status.ACTIVE, status.INACTIVE).messages({
+=======
     status: Joi.string().valid('active', 'inactive').messages({
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
       'any.only': 'Status should be either active or inactive',
     })
   })
@@ -237,7 +245,11 @@ exports.getVendors = {
 
 exports.updateStatus = {
   body: Joi.object({
+<<<<<<< HEAD
+    status: Joi.string().valid(status.ACTIVE, status.INACTIVE).required().messages({
+=======
     status: Joi.string().valid('active', 'inactive').required().messages({
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
       'any.only': 'Status should be either active or inactive',
       'any.required': 'Status is required'
     })

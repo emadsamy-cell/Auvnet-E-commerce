@@ -14,7 +14,11 @@ const productSchema = mongoose.Schema({
         ref: 'Category',
         required: true
     },
+<<<<<<< HEAD
+    vendor: {
+=======
     createdBy: {
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Vendor',
         required: true

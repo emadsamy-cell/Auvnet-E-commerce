@@ -268,5 +268,28 @@ exports.listQuery = {
         'number.min': 'size should be at least 1',
         'number.max': 'size should be at most 100',
       }),
+<<<<<<< HEAD
+    name: Joi.string()
+      .messages({
+        'string.base': 'Name should be a type of text',
+      }),
+    isDeleted: Joi.boolean()
+      .messages({
+        'boolean.base': 'isDeleted should be a type of boolean',
+      }),
+    country: Joi.string()
+      .messages({
+        'string.base': 'Country should be a type of text',
+      }),
+    city: Joi.string()
+      .messages({
+        'string.base': 'City should be a type of text',
+      }),
+    region: Joi.string() 
+      .messages({
+        'string.base': 'Region should be a type of text',
+      }),
+=======
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
   }),
 }

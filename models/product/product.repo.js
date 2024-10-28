@@ -130,7 +130,11 @@ exports.updateProduct = async (filter, update, options) => {
 
 exports.deleteProduct = async (filter) => {
     try {
+<<<<<<< HEAD
+        const result = await Product.deleteOne(filter);
+=======
         const result = await model.deleteOne(filter);
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
         if (result.deletedCount === 0) {
             return {
@@ -161,6 +165,25 @@ exports.deleteProduct = async (filter) => {
 }
 
 exports.findAndUpdateProduct = async (filter, update, select, populate, options) => {
+<<<<<<< HEAD
+    const product = await Product.findOneAndUpdate(filter, update, options).select(select).populate(populate);
+    if (product) {
+        return {
+            success: true,
+            statusCode: 200,
+            message: "Product has been updated successfully",
+            data: product,
+            error: null
+        };
+    } else {
+        return {
+            success: false,
+            status: 404,
+            message: "No product has been found",
+            data: null,
+            error: `There are no product with this filter ${filter}!!`
+        }
+=======
     try {
         const product = await Product.findOneAndUpdate(filter, update, options).select(select).populate(populate);
         if (product) {
@@ -188,6 +211,7 @@ exports.findAndUpdateProduct = async (filter, update, select, populate, options)
             data: null,
             error
         };
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     }
 };
 
