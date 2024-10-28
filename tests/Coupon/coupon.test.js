@@ -748,7 +748,11 @@ describe('___Claim A Coupon___', () => {
             .set('Authorization', `Bearer ${data.validUserToken}`);
 
         expect(response.status).toBe(400);
+<<<<<<< HEAD
         expect(response.body).toHaveProperty('message', 'You have exceeded the user usage limit');
+=======
+        expect(response.body).toHaveProperty('message', 'You have exceeded the user usage limit for this coupon');
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     });
 
     // 5) Claim a valid coupon successfully

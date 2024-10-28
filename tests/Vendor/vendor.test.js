@@ -4,7 +4,10 @@ const data = require('./vendor.data');
 const userData = require('../User/user.temp.data');
 const { generateOTP } = require("../../helpers/otpManager");
 const path = require('path');
+<<<<<<< HEAD
 const { status } = require('../../enums/vendor')
+=======
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
 const invalidVendorId = "66fc4c578db032187d5158d2";
 

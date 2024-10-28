@@ -6,8 +6,8 @@ const connect = async () => {
     await mongoose.connect(process.env.MONGO_URL);
 
     // initiateSuperAdminAccount
-    const createSuperAdmin = require("../helpers/createSuperAdmin");
-    //createSuperAdmin();
+    // const createSuperAdmin = require("../helpers/createSuperAdmin");
+    // createSuperAdmin();
 
 
     console.log("Database connected successfully....");

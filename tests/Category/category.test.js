@@ -172,7 +172,11 @@ describe("___Create Category___", () => {
         .send(data.parentNotFound);
 
         expect(response.status).toBe(404);
+<<<<<<< HEAD
         expect(response.body.message).toBe("Parent Category not found or deleted");
+=======
+        expect(response.body.message).toBe("Parent Category not found");
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     });
 
     it("should return status 422 when category is exceeding maximum level", async () => {

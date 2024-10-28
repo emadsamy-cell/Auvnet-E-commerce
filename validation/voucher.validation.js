@@ -31,8 +31,13 @@ exports.createVoucher = {
             'date.base': 'Expiration date must be a valid date (YYYY-MM-DD).',
         }),
 
+<<<<<<< HEAD
         numberOfVouchers: joi.number().min(0).messages({
             'number.min': 'Number of vouchers must be greater than or equal to 0.',
+=======
+        numberOfVouchers: joi.number().min(1).messages({
+            'number.min': 'Number of vouchers must be greater than or equal to 1.',
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
             'number.base': 'Number of vouchers must be a number.',
         }),
 
@@ -145,8 +150,13 @@ exports.updateVoucher = {
             'string.empty': 'Status can not be empty.',
         }),
 
+<<<<<<< HEAD
         numberOfVouchers: joi.number().min(0).messages({
             'number.min': 'Number of vouchers must be greater than or equal to 0.',
+=======
+        numberOfVouchers: joi.number().min(1).messages({
+            'number.min': 'Number of vouchers must be greater than or equal to 1.',
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
             'number.base': 'Number of vouchers must be a number.',
         }),
 

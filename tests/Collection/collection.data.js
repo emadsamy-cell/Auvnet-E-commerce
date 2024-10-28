@@ -7,8 +7,12 @@ exports.vendorToken;
 exports.userToken;
 exports.tempVendorToken;
 exports.collectionID = "670678a289942bb3019afceb";
+<<<<<<< HEAD
 exports.deletedCollectionID = "6714e2605f917e9028b9e8ca";
 exports.hiddenCollectionID = "670586afa1d35b395a083af1";
+=======
+exports.deletedCollectionID = "670586afa1d35b395a083af1";
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 exports.inCorrectCollectionID = "670586afa1d35b395a083a00"
 exports.invalidCollectionID = "123";
 
@@ -18,6 +22,7 @@ const validPage = 1;
 const invalidPage = 0;
 const invalidID = '123';
 const validProductID1 = "670668a59671a0e993a027be";
+<<<<<<< HEAD
 const validProductID2 = "670a639f74876bcdc630d978";
 const invalidProductID = "123";
 const tempProductID = "6706c303f20016d794b2bfdd"
@@ -29,6 +34,12 @@ const validMaxPrice = 999;
 const inValidMaxPrice = -1;
 const validMinPrice = 1000;
 const inValidMinPrice = -1;
+=======
+const validProductID2 = "6706671dd977a98a8e16f4fd";
+const invalidProductID = "123";
+const tempProductID = "6706c303f20016d794b2bfdd"
+const deleteProductID = "6706c44977978231eddff8f2"
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
 // ______________________________________Validation ______________________________________
 exports.inValidSize = {
@@ -54,6 +65,7 @@ exports.validParamsWithVendor = {
     vendor: exports.vendorID
 };
 
+<<<<<<< HEAD
 exports.inValidName = {
     name: invalidName
 }
@@ -107,6 +119,14 @@ exports.validMinPriceAvailabilityFilter = {
 
 // ______________________________________ِAdd Products______________________________
 exports.validAddProducts = {
+=======
+
+// ______________________________________ِAdd Products______________________________
+exports.validAddProducts = {
+    collections: [
+        this.collectionID
+    ],
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     products: [
         validProductID1,
         validProductID2
@@ -114,18 +134,36 @@ exports.validAddProducts = {
 }
 
 exports.invalidAddProducts = {
+<<<<<<< HEAD
+=======
+    collections: [
+        this.collectionID
+    ],
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     products: [
         invalidProductID
     ]
 }
 
 exports.deletedProductsAddProducts = {
+<<<<<<< HEAD
+=======
+    collections: [
+        this.collectionID
+    ],
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     products: [
         deleteProductID
     ]
 }
 
 exports.tempAddProducts = {
+<<<<<<< HEAD
+=======
+    collections: [
+        this.collectionID
+    ],
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     products: [
         tempProductID
     ]

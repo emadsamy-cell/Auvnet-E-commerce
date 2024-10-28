@@ -5,7 +5,7 @@ const uploadManager = require('../helpers/uploadManager');
 const fileSize = {
     'image': 1024 * 1024 * 5, // 5MB
     'video': 1024 * 1024 * 20, // 20MB
-    'document' : 1024 * 1024 * 10 // 10MB
+    'document': 1024 * 1024 * 10 // 10MB
 };
 
 const allowedTypes = {
@@ -18,8 +18,8 @@ const allowedTypes = {
 // disk storage for testing purposes
 const storage = multer.diskStorage({
     destination: './uploads/',
-    filename: function(req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
     }
 });
 
@@ -41,6 +41,5 @@ exports.uploadMultipleFiles = (fileType, numberOfFiles, fieldName) => {
 
 exports.uploadMultipleFields = (files) => {
     const { types, numberOfFiles, fields } = uploadManager.handleMultipleFields(files, allowedTypes);
-
     return uploadFile(undefined, numberOfFiles, types).fields(fields);
 }

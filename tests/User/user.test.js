@@ -3,7 +3,10 @@ const app = require("../../app");
 const { generateOTP } = require("../../helpers/otpManager");
 const tokenManager = require('../../helpers/tokenManager');
 const data = require('./user.temp.data');
+<<<<<<< HEAD
 const roles = require('../../enums/roles')
+=======
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
 jest.mock("../../helpers/otpManager", () => ({
     generateOTP: jest.fn(),
@@ -12,8 +15,13 @@ jest.mock("../../helpers/otpManager", () => ({
 beforeAll(() => {
     jest.setTimeout(10000);
     data.adminToken = tokenManager.generateAccessToken({id: 1, role: 'admin'});
+<<<<<<< HEAD
     data.userToken = tokenManager.generateAccessToken({id: 2, role: roles.USER});
     data.vendorToken = tokenManager.generateAccessToken({id: 3, role: roles.VENDOR});
+=======
+    data.userToken = tokenManager.generateAccessToken({id: 2, role: 'user'});
+    data.vendorToken = tokenManager.generateAccessToken({id: 3, role: 'vendor'});
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 });
 
 // Authentication

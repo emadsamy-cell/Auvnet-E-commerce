@@ -24,6 +24,7 @@ const {
     REDEEM_VOUCHER
   } = require("../../endpoints/voucher.endpoints")
 
+// Collection Endpoints Policy
 const {
     GET_COLLECTION,
     LIKE_COLLECTION,
@@ -73,5 +74,7 @@ module.exports = [
     CREATE_REPLY,
     CREATE_REVIEW,
     UPDATE_REVIEW,
-    DELETE_REVIEW
+    DELETE_REVIEW,
+
+    GET_ADS,
 ];

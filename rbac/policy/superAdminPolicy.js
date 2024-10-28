@@ -50,6 +50,7 @@ const {
 
 } = require("../../endpoints/voucher.endpoints")
 
+// Collection Endpoints Policy
 const {
   GET_COLLECTION,
   DELETE_COLLECTION
@@ -60,6 +61,14 @@ const {
   GET_REVIEWS,
   DELETE_REVIEW
 } = require('../../endpoints/review.endpoints');
+
+// Ad Endpoints Policy
+const {
+  CREATE_AD,
+  GET_ADS,
+  UPDATE_AD,
+  DELETE_AD,
+} = require("../../endpoints/ad.endpoints");
 
 module.exports = [
   GET_PROFILE,
@@ -104,4 +113,9 @@ module.exports = [
 
   GET_REVIEWS,
   DELETE_REVIEW,
+  
+  CREATE_AD,
+  GET_ADS,
+  UPDATE_AD,
+  DELETE_AD,
 ];

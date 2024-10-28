@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 const roles = require('../enums/roles');
+=======
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 const passwordManager = require("../helpers/passwordManager");
 const otpManager = require('../helpers/otpManager');
 const vendorRepo = require('../models/vendor/vendor.repo');
@@ -358,12 +361,18 @@ const sendEmailWithCredentials = async (vendor) => {
 // Get all vendors
 exports.getVendors = asyncHandler(async (req, res) => {
     const filter = {}
+<<<<<<< HEAD
     if (req.user.role !== roles.USER) {
         if (req.query.status) filter.status = req.query.status;
         if (req.query.isDeleted) filter.isDeleted = req.query.isDeleted;
     } else {
         filter.isDeleted = false;
         filter.status = "active";
+=======
+    if (req.user.role !== 'user') {
+        if (req.query.status) filter.status = req.query.status;
+        if (req.query.isDeleted) filter.isDeleted = req.query.isDeleted;
+>>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     }
 
     const { vendorSelect } = selectHandler({ role: req.user.role });
