@@ -16,7 +16,7 @@ exports.filterHandler = (options) => {
     let productFilter = {
         ...(options.vendorID ? { vendor: new ObjectId(options.vendorID) } : {}),
         ...(options.name ? { 'name': { $regex: options.name , $options: 'i' } } : {}),
-        ...(options.category ? { 'category': options.category } : {}),
+        ...(options.category ? { 'category': { $elemMatch: options.category } } : {}),
         ...(options.role === roles.USER ? { 'isDeleted': false} : {}),
     };
 

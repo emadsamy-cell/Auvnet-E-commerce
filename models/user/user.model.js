@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 const roles = require('../../enums/roles');
-=======
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 const moment = require('moment');
 const mongoose = require('mongoose');
 
@@ -125,11 +122,7 @@ const userSchema = mongoose.Schema({
     ],     
     role: {
         type: String,
-<<<<<<< HEAD
         default: roles.USER
-=======
-        default: 'user'
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     },
     coins: {
         type: Number,

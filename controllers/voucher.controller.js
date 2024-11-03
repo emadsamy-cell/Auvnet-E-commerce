@@ -1,16 +1,9 @@
 const roles = require("../enums/roles");
 const voucherEnum = require("../enums/voucher");
-<<<<<<< HEAD
-const voucherHelpers = require("../helpers/voucher");
-const { paginate } = require("../utils/pagination");
-const { asyncHandler } = require("../utils/asyncHandler");
-const { createResponse } = require("../utils/createResponse");
-=======
 const { paginate } = require("../utils/pagination");
 const { asyncHandler } = require("../utils/asyncHandler");
 const { createResponse } = require("../utils/createResponse");
 const filterAndSelectManager = require("../helpers/filterAndSelectManager");
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 const userRepo = require("../models/user/user.repo");
 
 const voucherRepo = require("../models/voucher/voucher.repo");
@@ -23,19 +16,6 @@ exports.create = asyncHandler(async (req, res) => {
 });
 
 exports.getAll = asyncHandler(async (req, res) => {
-<<<<<<< HEAD
-    let result = null;
-
-    //If sender is user, return vouchers allocated for the user's location
-    if (req.user.role === roles.USER) {
-        result = await voucherHelpers.getVouchersForUser(req)
-    }
-
-    //If sender is admin, return all coupons
-    else {
-        result = await voucherHelpers.getVouchersForAdmin(req)
-    }
-=======
     let user = null;
     if(req.user.role === roles.USER) {
         user = await userRepo.findUser({ _id: req.user._id }, "country region city coins");
@@ -44,26 +24,17 @@ exports.getAll = asyncHandler(async (req, res) => {
 
     const { voucherFilter } = filterAndSelectManager.filterHandler(voucherOptions);
     const { voucherSelect } = filterAndSelectManager.selectHandler(voucherOptions);
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
     const { page, size, sortBy, sortOrder } = req.query;
 
     const options = paginate(page, size);
     options["sort"] = { [sortBy]: sortOrder === "asc" ? 1 : -1 }
 
-<<<<<<< HEAD
-    const vouchers = await voucherRepo.getList(result.voucherFilter, result.select, options);
-=======
     const vouchers = await voucherRepo.getList(voucherFilter, voucherSelect, options);
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     return res.status(200).json(createResponse(true, "Vouchers are found", 200, null, vouchers))
 });
 
 exports.getById = asyncHandler(async (req, res) => {
-<<<<<<< HEAD
-    //filterBuilder function is used to build the filter based on the user role
-    const { voucherFilter } = await voucherHelpers.filterBuilder(req);
-=======
     let user = null;
     if(req.user.role === roles.USER) {
         user = await userRepo.findUser({ _id: req.user._id }, "country region city coins");
@@ -71,7 +42,6 @@ exports.getById = asyncHandler(async (req, res) => {
     const voucherOptions = { role: req.user.role, voucherId: req.params.id, userCountry: user?.data?.country, userRegion: user?.data?.region, userCity: user?.data?.city };
 
     const { voucherFilter } = filterAndSelectManager.filterHandler(voucherOptions);
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
     const select = req.user.role === roles.USER ? "-usedBy -numberOfVouchers -createdBy -__v -isDeleted" : "-__v";
     const populate = req.user.role === roles.USER ?
@@ -107,16 +77,10 @@ exports.delete = asyncHandler(async (req, res) => {
 });
 
 exports.claim = asyncHandler(async (req, res) => {
-<<<<<<< HEAD
-    //filterBuilder function is used to build the filter based on the user role
-    //Check that given voucher id is valid to the user based on: user's location, not deleted.
-    const { voucherFilter, user } = await voucherHelpers.filterBuilder(req);
-=======
     const user = await userRepo.findUser({ _id: req.user._id }, "country region city voucherClaimed coins");
     const voucherOptions = { role: req.user.role, voucherId: req.params.id, userCountry: user?.data?.country, userRegion: user?.data?.region, userCity: user?.data?.city };
 
     const { voucherFilter } = filterAndSelectManager.filterHandler(voucherOptions);
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 
     //Check if user isn't claiming a voucher now.
     if (user.data.voucherClaimed) {
@@ -141,15 +105,9 @@ exports.claim = asyncHandler(async (req, res) => {
         return res.status(400).json(createResponse(false, "Voucher is expired", 400))
     }
 
-<<<<<<< HEAD
-    //If user has already claimed the voucher
-    if (usedBy.length) {
-        return res.status(400).json(createResponse(false, "You have claimed this voucher before", 400))
-=======
     //If user has already redeemed the voucher
     if (usedBy.length) {
         return res.status(400).json(createResponse(false, "You have redeemed this voucher before", 400))
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     }
 
     //If number of vouchers is zero

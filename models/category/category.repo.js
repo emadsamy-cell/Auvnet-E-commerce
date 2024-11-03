@@ -135,11 +135,7 @@ exports.updateCategories = async (filter, update, options) => {
         if (result.matchedCount > 0) {
             return {
                 success: true,
-<<<<<<< HEAD
                 message: "Categories has been updated successfully",
-=======
-                message: "Category has been updated successfully",
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
                 statusCode: 200,
                 data: null,
                 error: null
@@ -148,15 +144,9 @@ exports.updateCategories = async (filter, update, options) => {
             return {
                 success: false,
                 statusCode: 404,
-<<<<<<< HEAD
                 message: "Categories not found",
                 data: null,
                 error: `There are no Categories with this filter ${filter}!!`
-=======
-                message: "Category not found",
-                data: null,
-                error: `There are no Category with this filter ${filter}!!`
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
             }
         }
     } catch (error) {
@@ -241,25 +231,15 @@ exports.deleteCategories = async (filter) => {
             return {
                 success: false,
                 statusCode: 404,
-<<<<<<< HEAD
                 message: "Categories not found",
                 data: null,
                 error: `There are no Categories with this filter ${filter}!!`
-=======
-                message: "Category not found",
-                data: null,
-                error: `There are no Category with this filter ${filter}!!`
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
             }
         } else {
             return {
                 success: true,
                 statusCode: 204,
-<<<<<<< HEAD
                 message: "Categories successfully deleted",
-=======
-                message: "Category successfully deleted",
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
                 data: null,
                 error: null
             }
