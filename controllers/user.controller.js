@@ -356,18 +356,12 @@ exports.changePassword = asyncHandler(async (req, res) => {
 exports.listUsers = asyncHandler(async (req, res) => {
     const { limit, skip } = paginate(req.query.page, req.query.size);
 
-<<<<<<< HEAD
     const { userFilter } = filterHandler(req.query)
     const { userSelect } = selectHandler({ role: req.user.role })
 
     const users = await userRepo.getList(
         userFilter,
         userSelect,
-=======
-    const users = await userRepo.getList(
-        {  },
-        "name email userName country city region phone gender coins image isDeleted",
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
         null,
         skip,
         limit,

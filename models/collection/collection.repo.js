@@ -165,11 +165,7 @@ exports.updateCollections = async (filter, update, options) => {
         if (result.matchedCount > 0) {
             return {
                 success: true,
-<<<<<<< HEAD
                 message: "Collections has been updated successfully",
-=======
-                message: "Collection has been updated successfully",
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
                 statusCode: 200,
                 data: null,
                 error: null
@@ -178,15 +174,9 @@ exports.updateCollections = async (filter, update, options) => {
             return {
                 success: false,
                 statusCode: 404,
-<<<<<<< HEAD
                 message: "Collections not found",
                 data: null,
                 error: `There are no Collections with this filter ${filter}!!`
-=======
-                message: "Collection not found",
-                data: null,
-                error: `There are no Collection with this filter ${filter}!!`
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
             }
         }
     } catch (error) {
@@ -271,25 +261,15 @@ exports.deleteCollections = async (filter) => {
             return {
                 success: false,
                 statusCode: 404,
-<<<<<<< HEAD
                 message: "Collections not found",
                 data: null,
                 error: `There are no Collections with this filter ${filter}!!`
-=======
-                message: "Collection not found",
-                data: null,
-                error: `There are no Collection with this filter ${filter}!!`
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
             }
         } else {
             return {
                 success: true,
                 statusCode: 204,
-<<<<<<< HEAD
                 message: "Collections successfully deleted",
-=======
-                message: "Collection successfully deleted",
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
                 data: null,
                 error: null
             }

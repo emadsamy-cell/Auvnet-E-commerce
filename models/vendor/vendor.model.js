@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 const { status } = require('../../enums/vendor');
 const roles = require('../../enums/roles');
-=======
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
 const mongoose = require('mongoose');
 
 const vendorSchema = new mongoose.Schema({
@@ -59,13 +56,8 @@ const vendorSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-<<<<<<< HEAD
         enum: [status.ACTIVE, status.INACTIVE],
         default: status.ACTIVE
-=======
-        enum: ['active', 'inactive'],
-        default: 'active'
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     },
     profileImage: {
         type: String,
@@ -85,11 +77,7 @@ const vendorSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-<<<<<<< HEAD
         default: roles.VENDOR
-=======
-        default: 'vendor'
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
     },
     gender: {
         type: String,
