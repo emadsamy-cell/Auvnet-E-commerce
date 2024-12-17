@@ -268,7 +268,6 @@ exports.listQuery = {
         'number.min': 'size should be at least 1',
         'number.max': 'size should be at most 100',
       }),
-<<<<<<< HEAD
     name: Joi.string()
       .messages({
         'string.base': 'Name should be a type of text',
@@ -289,7 +288,5 @@ exports.listQuery = {
       .messages({
         'string.base': 'Region should be a type of text',
       }),
-=======
->>>>>>> 3789e6135be381a55e563446fb9db0152415a5b9
   }),
 }
